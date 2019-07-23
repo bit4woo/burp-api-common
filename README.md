@@ -4,7 +4,7 @@ common methods used by myself.
 
 [https://jitpack.io/#jitpack/burp-api-common](https://jitpack.io/#jitpack/burp-api-common)
 
-[![Release](https://jitpack.io/v/jitpack/burp-api-common.svg)](https://jitpack.io/#jitpack/burp-api-common)
+[![Release](https://jitpack.io/v/bit4woo/burp-api-common.svg)](https://jitpack.io/#bit4woo/burp-api-common)
 
 To use it in your Maven build add:
 ```xml
