@@ -10,26 +10,29 @@ import java.util.Map.Entry;
 public class Getter {
 	private static IExtensionHelpers helpers;
 	private final static String Header_Spliter = ": ";
+	private final static String Header_firstLine_Spliter = " ";
 	public Getter(IExtensionHelpers helpers) {
-		this.helpers = helpers;
+		Getter.helpers = helpers;
 	}
 
 	/*
 	 * 获取header的字符串数组，是构造burp中请求需要的格式。
 	 */
 	public List<String> getHeaderList(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
+		if (null == messageInfo) return null;
+		byte[] requestOrResponse = null;
 		if(messageIsRequest) {
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
-			List<String> headers = analyzeRequest.getHeaders();
-			return headers;
+			requestOrResponse = messageInfo.getRequest();
 		}else {
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(messageInfo.getResponse());
-			List<String> headers = analyzeResponse.getHeaders();
-			return headers;
+			requestOrResponse = messageInfo.getResponse();
 		}
+		return getHeaderList(messageIsRequest,requestOrResponse);
 	}
-
+	/*
+	 * 获取请求包或者响应包中的header List
+	 */
 	public List<String> getHeaderList(boolean IsRequest,byte[] requestOrResponse) {
+		if (null == requestOrResponse) return null;
 		if(IsRequest) {
 			IRequestInfo analyzeRequest = helpers.analyzeRequest(requestOrResponse);
 			List<String> headers = analyzeRequest.getHeaders();
@@ -45,8 +48,9 @@ public class Getter {
 	 * 获取所有headers，当做一个string看待。
 	 * 主要用于判断是否包含某个特殊字符串
 	 * List<String> getHeaders 调用toString()方法，得到如下格式：[111111, 2222]
-	 * 就能满足上面的场景了
+	 * 就能满足上面的场景了,废弃这个函数
 	 */
+	@Deprecated
 	public String getHeaderString(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
 		List<String> headers =null;
 		StringBuilder headerString = new StringBuilder();
@@ -68,39 +72,56 @@ public class Getter {
 	/*
 	 * 获取header的map格式，key:value形式
 	 * 这种方式可以用put函数轻松实现：如果有则update，如果无则add。
-	 * ！！！注意：这个方法获取到的map，会少了协议头GET /cps.gec/limit/information.html HTTP/1.1
+	 * ！！！注意：这个方法获取到的map，第一行将分割成形如 key = "GET", value= "/cps.gec/limit/information.html HTTP/1.1"
+	 * 响应包则分割成形如：key =  "HTTP/1.1", value="200 OK"
 	 */
 	public HashMap<String,String> getHeaderHashMap(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
-		List<String> headers=null;
+		if (messageInfo == null) return null;
+		List<String> headers=getHeaderList(messageIsRequest, messageInfo);
+		return headerListToHeaderMap(headers);
+	}
+	
+	
+	public HashMap<String,String> getHeaderHashMap(boolean messageIsRequest,byte[] requestOrResponse) {
+		if (requestOrResponse == null) return null;
+		List<String> headers=getHeaderList(messageIsRequest, requestOrResponse);
+		return headerListToHeaderMap(headers);
+	}
+	
+	/*
+	 * 仅该类内部调用
+	 */
+	private static HashMap<String, String> headerListToHeaderMap(List<String> headers) {
 		HashMap<String,String> result = new HashMap<String, String>();
-		if(messageIsRequest) {
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
-			headers = analyzeRequest.getHeaders();
-		}else {
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(messageInfo.getResponse());
-			headers = analyzeResponse.getHeaders();
-		}
-
+		if (null == headers) return null;
 		for (String header : headers) {
-			if(header.contains(Header_Spliter)) {//to void trigger the Exception
-				try {
-					String headerName = header.split(Header_Spliter, 0)[0];
-					String headerValue = header.split(Header_Spliter, 0)[1];
-					//POST /login.pub HTTP/1.1  the first line of header will tirgger error here
-					result.put(headerName, headerValue);
-				} catch (Exception e) {
-					//e.printStackTrace();
-				}
+			if (headers.indexOf(header) == 0) {
+				String headerName = header.split(Header_firstLine_Spliter, 2)[0];//这里的limit=2 可以理解成分割成2份
+				String headerValue = header.split(Header_firstLine_Spliter, 2)[1];
+				result.put(headerName, headerValue);
+			}else {
+				String headerName = header.split(Header_Spliter, 2)[0];//这里的limit=2 可以理解成分割成2份，否则referer可能别分成3份
+				String headerValue = header.split(Header_Spliter, 2)[1];
+				result.put(headerName, headerValue);
 			}
 		}
 		return result;
 	}
+	
+	
 
-	public List<String> MapToList(HashMap<String,String> Headers){
+	public List<String> headerMapToHeaderList(HashMap<String,String> Headers){
 		List<String> result = new ArrayList<String>();
 		for (Entry<String,String> header:Headers.entrySet()) {
-			String item = header.getKey()+Header_Spliter+header.getValue();
-			result.add(item);
+			String key = header.getKey();
+			String value = header.getValue();
+			if (key.contains("HTTP/") || value.contains("HTTP/")) {//识别第一行
+				String item = key+Header_firstLine_Spliter+value;
+				result.add(0, item);
+			}else {
+				String item = key+Header_Spliter+value;
+				result.add(item);
+			}
 		}
 		return result;
 	}
@@ -109,29 +130,18 @@ public class Getter {
 	 * 获取某个header的值，如果没有此header，返回null。
 	 */
 	public String getHeaderValueOf(boolean messageIsRequest,IHttpRequestResponse messageInfo, String headerName) {
-		List<String> headers=null;
-		if(messageIsRequest) {
-			if (messageInfo.getRequest() == null) {
-				return null;
-			}
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
-			headers = analyzeRequest.getHeaders();
-		}else {
-			if (messageInfo.getResponse() == null) {
-				return null;
-			}
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(messageInfo.getResponse());
-			headers = analyzeResponse.getHeaders();
-		}
-
-
-		headerName = headerName.toLowerCase().replace(":", "");
-		for (String header : headers) {
-			if (header.toLowerCase().startsWith(headerName)) {
-				return header.split(Header_Spliter, 2)[1];//分成2部分，Location: https://www.jd.com
-			}
-		}
-		return null;
+		HashMap<String, String> headers = getHeaderHashMap(messageIsRequest,messageInfo);
+		if (null ==headers || headerName ==null) return null;
+		return headers.get(headerName.trim());
+	}
+	
+	/*
+	 * 获取某个header的值，如果没有此header，返回null。
+	 */
+	public String getHeaderValueOf(boolean messageIsRequest,byte[] requestOrResponse, String headerName) {
+		HashMap<String, String> headers=getHeaderHashMap(messageIsRequest,requestOrResponse);
+		if (null ==headers || headerName ==null) return null;
+		return headers.get(headerName.trim());
 	}
 
 
@@ -139,28 +149,13 @@ public class Getter {
 		if (messageInfo == null){
 			return null;
 		}
+		byte[] requestOrResponse = null;
 		if(messageIsRequest) {
-			if (messageInfo.getRequest() ==null) {
-				return null;
-			}
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
-			int bodyOffset = analyzeRequest.getBodyOffset();
-			byte[] byte_Request = messageInfo.getRequest();
-
-			byte[] byte_body = Arrays.copyOfRange(byte_Request, bodyOffset, byte_Request.length);//not length-1
-			//String body = new String(byte_body); //byte[] to String
-			return byte_body;
+			requestOrResponse = messageInfo.getRequest();
 		}else {
-			if (messageInfo.getResponse() ==null) {
-				return null;
-			}
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(messageInfo.getResponse());
-			int bodyOffset = analyzeResponse.getBodyOffset();
-			byte[] byte_Request = messageInfo.getResponse();
-
-			byte[] byte_body = Arrays.copyOfRange(byte_Request, bodyOffset, byte_Request.length);//not length-1
-			return byte_body;
+			requestOrResponse = messageInfo.getResponse();
 		}
+		return getBody(messageIsRequest, requestOrResponse);
 	}
 
 	public byte[] getBody(boolean isRequest,byte[] requestOrResponse) {
@@ -182,14 +177,15 @@ public class Getter {
 
 
 	public String getShortUrl(IHttpRequestResponse messageInfo) {
-		return messageInfo.getHttpService().toString();
+		//return messageInfo.getHttpService().toString(); //该方法包含了默认端口号，而一般情况都不包含
+		URL fullUrl = getURL(messageInfo);
+		String shortUrl = fullUrl.toString().replace(fullUrl.getFile(), "/");
+		return shortUrl;
 	}
 
 	public URL getURL(IHttpRequestResponse messageInfo){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
 		return analyzeRequest.getUrl();
-
-		//callbacks.getHelpers().analyzeRequest(baseRequestResponse).getUrl();
 	}
 
 	public String getHost(IHttpRequestResponse messageInfo) {
@@ -203,9 +199,26 @@ public class Getter {
 		IResponseInfo analyzedResponse = helpers.analyzeResponse(messageInfo.getResponse());
 		return analyzedResponse.getStatusCode();
 	}
+	
+	public short getStatusCode(byte[] response) {
+		if (response == null) {
+			return -1;
+		}
+		try {
+			IResponseInfo analyzedResponse = helpers.analyzeResponse(response);
+			return analyzedResponse.getStatusCode();
+		} catch (Exception e) {
+			return -1;
+		}
+	}
 
 	public List<IParameter> getParas(IHttpRequestResponse messageInfo){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
+		return analyzeRequest.getParameters();
+	}
+	
+	public List<IParameter> getParas(byte[] request){
+		IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
 		return analyzeRequest.getParameters();
 	}
 
