@@ -11,6 +11,7 @@ public class Getter {
 	private static IExtensionHelpers helpers;
 	private final static String Header_Spliter = ": ";
 	private final static String Header_firstLine_Spliter = " ";
+	
 	public Getter(IExtensionHelpers helpers) {
 		Getter.helpers = helpers;
 	}
@@ -180,7 +181,7 @@ public class Getter {
 	 * 注意，这里获取的URL包含了默认端口！
 	 */
 	public String getShortUrl(IHttpRequestResponse messageInfo) {
-		//return messageInfo.getHttpService().toString(); //该方法包含了默认端口号，而一般情况都不包含
+		//return messageInfo.getHttpService().toString(); //this result of this method doesn't contains default port
 		URL fullUrl = getURL(messageInfo);
 		String shortUrl = fullUrl.toString().replace(fullUrl.getFile(), "/");
 		return shortUrl;
