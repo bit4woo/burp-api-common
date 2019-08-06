@@ -182,9 +182,22 @@ public class Getter {
 		String shortUrl = fullUrl.toString().replace(fullUrl.getFile(), "/");
 		return shortUrl;
 	}
+	
+	public String getShortUrl(byte[] request) {
+		URL fullUrl = getURL(request);
+		String shortUrl = fullUrl.toString().replace(fullUrl.getFile(), "/");
+		return shortUrl;
+	}
 
 	public URL getURL(IHttpRequestResponse messageInfo){
+		if (null == messageInfo) return null;
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
+		return analyzeRequest.getUrl();
+	}
+	
+	public URL getURL(byte[] request){
+		if (null == request) return null;
+		IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
 		return analyzeRequest.getUrl();
 	}
 
