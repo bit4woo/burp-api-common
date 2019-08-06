@@ -221,7 +221,26 @@ public class Getter {
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
 		return analyzeRequest.getParameters();
 	}
+	
+	public String getMethod(IHttpRequestResponse messageInfo){
+		if (messageInfo == null || messageInfo.getRequest() == null) {
+			return null;
+		}
+		IRequestInfo analyzedRequest = helpers.analyzeRequest(messageInfo.getRequest());
+		return analyzedRequest.getMethod();
+	}
 
+	public String getMethod(byte[] request){
+		if (request == null) {
+			return null;
+		}
+		try {
+			IRequestInfo analyzedRequest = helpers.analyzeRequest(request);
+			return analyzedRequest.getMethod();
+		} catch (Exception e) {
+			return null;
+		}
+	}
 
 	public String getHTTPBasicCredentials(IHttpRequestResponse messageInfo) throws Exception{
 		String authHeader  = getHeaderValueOf(true, messageInfo, "Authorization").trim();
