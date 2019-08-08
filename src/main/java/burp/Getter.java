@@ -77,14 +77,14 @@ public class Getter {
 	 * ！！！注意：这个方法获取到的map，第一行将分割成形如 key = "GET", value= "/cps.gec/limit/information.html HTTP/1.1"
 	 * 响应包则分割成形如：key =  "HTTP/1.1", value="200 OK"
 	 */
-	public HashMap<String,String> getHeaderHashMap(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
+	public LinkedHashMap<String,String> getHeaderMap(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
 		if (messageInfo == null) return null;
 		List<String> headers=getHeaderList(messageIsRequest, messageInfo);
 		return headerListToHeaderMap(headers);
 	}
 
 
-	public HashMap<String,String> getHeaderHashMap(boolean messageIsRequest,byte[] requestOrResponse) {
+	public LinkedHashMap<String,String> getHeaderMap(boolean messageIsRequest,byte[] requestOrResponse) {
 		if (requestOrResponse == null) return null;
 		List<String> headers=getHeaderList(messageIsRequest, requestOrResponse);
 		return headerListToHeaderMap(headers);
@@ -132,7 +132,7 @@ public class Getter {
 	 * 获取某个header的值，如果没有此header，返回null。
 	 */
 	public String getHeaderValueOf(boolean messageIsRequest,IHttpRequestResponse messageInfo, String headerName) {
-		HashMap<String, String> headers = getHeaderHashMap(messageIsRequest,messageInfo);
+		LinkedHashMap<String, String> headers = getHeaderMap(messageIsRequest,messageInfo);
 		if (null ==headers || headerName ==null) return null;
 		return headers.get(headerName.trim());
 	}
@@ -141,7 +141,7 @@ public class Getter {
 	 * 获取某个header的值，如果没有此header，返回null。
 	 */
 	public String getHeaderValueOf(boolean messageIsRequest,byte[] requestOrResponse, String headerName) {
-		HashMap<String, String> headers=getHeaderHashMap(messageIsRequest,requestOrResponse);
+		LinkedHashMap<String, String> headers=getHeaderMap(messageIsRequest,requestOrResponse);
 		if (null ==headers || headerName ==null) return null;
 		return headers.get(headerName.trim());
 	}
