@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -11,7 +12,7 @@ public class Getter {
 	private static IExtensionHelpers helpers;
 	private final static String Header_Spliter = ": ";
 	private final static String Header_firstLine_Spliter = " ";
-	
+
 	public Getter(IExtensionHelpers helpers) {
 		Getter.helpers = helpers;
 	}
@@ -81,19 +82,19 @@ public class Getter {
 		List<String> headers=getHeaderList(messageIsRequest, messageInfo);
 		return headerListToHeaderMap(headers);
 	}
-	
-	
+
+
 	public HashMap<String,String> getHeaderHashMap(boolean messageIsRequest,byte[] requestOrResponse) {
 		if (requestOrResponse == null) return null;
 		List<String> headers=getHeaderList(messageIsRequest, requestOrResponse);
 		return headerListToHeaderMap(headers);
 	}
-	
+
 	/*
 	 * 仅该类内部调用
 	 */
-	private static HashMap<String, String> headerListToHeaderMap(List<String> headers) {
-		HashMap<String,String> result = new HashMap<String, String>();
+	private static LinkedHashMap<String, String> headerListToHeaderMap(List<String> headers) {
+		LinkedHashMap<String,String> result = new LinkedHashMap<String, String>();
 		if (null == headers) return null;
 		for (String header : headers) {
 			if (headers.indexOf(header) == 0) {
@@ -108,10 +109,10 @@ public class Getter {
 		}
 		return result;
 	}
-	
-	
 
-	public List<String> headerMapToHeaderList(HashMap<String,String> Headers){
+
+
+	public List<String> headerMapToHeaderList(LinkedHashMap<String,String> Headers){
 		List<String> result = new ArrayList<String>();
 		for (Entry<String,String> header:Headers.entrySet()) {
 			String key = header.getKey();
@@ -135,7 +136,7 @@ public class Getter {
 		if (null ==headers || headerName ==null) return null;
 		return headers.get(headerName.trim());
 	}
-	
+
 	/*
 	 * 获取某个header的值，如果没有此header，返回null。
 	 */
@@ -176,7 +177,7 @@ public class Getter {
 		return byte_body;
 	}
 
-	
+
 	/*
 	 * 注意，这里获取的URL包含了默认端口！
 	 */
@@ -186,7 +187,7 @@ public class Getter {
 		String shortUrl = fullUrl.toString().replace(fullUrl.getFile(), "/");
 		return shortUrl;
 	}
-	
+
 	/*
 	 * 注意，这里获取的URL包含了默认端口！
 	 */
@@ -207,7 +208,7 @@ public class Getter {
 		IResponseInfo analyzedResponse = helpers.analyzeResponse(messageInfo.getResponse());
 		return analyzedResponse.getStatusCode();
 	}
-	
+
 	public short getStatusCode(byte[] response) {
 		if (response == null) {
 			return -1;
@@ -224,12 +225,12 @@ public class Getter {
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
 		return analyzeRequest.getParameters();
 	}
-	
+
 	public List<IParameter> getParas(byte[] request){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
 		return analyzeRequest.getParameters();
 	}
-	
+
 	public String getMethod(IHttpRequestResponse messageInfo){
 		if (messageInfo == null || messageInfo.getRequest() == null) {
 			return null;
