@@ -1,5 +1,9 @@
 package burp;
-
+/*
+ * source code: https://github.com/bit4woo/burp-api-common/blob/master/src/main/java/burp/Getter.java
+ * author: bit4woo
+ * github: https://github.com/bit4woo
+ */
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +22,7 @@ public class Getter {
 
 	/*
 	 * 获取header的字符串数组，是构造burp中请求需要的格式。
+	 * return headers list
 	 */
 	public List<String> getHeaderList(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
 		if (null == messageInfo) return null;
@@ -29,6 +34,7 @@ public class Getter {
 		}
 		return getHeaderList(messageIsRequest,requestOrResponse);
 	}
+	
 	/*
 	 * 获取请求包或者响应包中的header List
 	 */
@@ -82,7 +88,9 @@ public class Getter {
 		return headerListToHeaderMap(headers);
 	}
 
-
+	/*
+	 * use LinkedHashMap to keep headers in order
+	 */
 	public LinkedHashMap<String,String> getHeaderMap(boolean messageIsRequest,byte[] requestOrResponse) {
 		if (requestOrResponse == null) return null;
 		List<String> headers=getHeaderList(messageIsRequest, requestOrResponse);
@@ -179,6 +187,8 @@ public class Getter {
 
 	/*
 	 * 注意，这里获取的URL包含了默认端口！
+	 * this return value of url contains default port, 80 :443
+	 * eg. http://bit4woo.com:80/
 	 */
 	public String getShortUrl(IHttpRequestResponse messageInfo) {
 		//return messageInfo.getHttpService().toString(); //this result of this method doesn't contains default port
@@ -189,6 +199,8 @@ public class Getter {
 
 	/*
 	 * 注意，这里获取的URL包含了默认端口！
+	 * this return value of url contains default port, 80 :443
+	 * eg. http://bit4woo.com:80/
 	 */
 	public URL getURL(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
