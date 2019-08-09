@@ -22,6 +22,6 @@ and the dependency:
 	<dependency>
 		<groupId>com.github.bit4woo</groupId>
 		<artifactId>burp-api-common</artifactId>
-		<version>v0.0.3</version>
+		<version>v0.0.4</version>
 	</dependency>
 ```
