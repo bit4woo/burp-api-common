@@ -1,4 +1,5 @@
 package burp;
+import java.net.MalformedURLException;
 /*
  * source code: https://github.com/bit4woo/burp-api-common/blob/master/src/main/java/burp/Getter.java
  * author: bit4woo
@@ -190,9 +191,9 @@ public class Getter {
 	 * this return value of url contains default port, 80 :443
 	 * eg. http://bit4woo.com:80/
 	 */
-	public String getShortUrl(IHttpRequestResponse messageInfo) {
+	public String getShortUrlWithDefaultPort(IHttpRequestResponse messageInfo) {
 		//return messageInfo.getHttpService().toString(); //this result of this method doesn't contains default port
-		URL fullUrl = getURL(messageInfo);
+		URL fullUrl = getURLWithDefaultPort(messageInfo);
 		String shortUrl = fullUrl.toString().replace(fullUrl.getFile(), "/");
 		return shortUrl;
 	}
@@ -202,10 +203,43 @@ public class Getter {
 	 * this return value of url contains default port, 80 :443
 	 * eg. http://bit4woo.com:80/
 	 */
-	public URL getURL(IHttpRequestResponse messageInfo){
+	public URL getURLWithDefaultPort(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
 		return analyzeRequest.getUrl();
+	}
+	
+	/*
+	 *
+	 * this return value of url will NOT contains default port, 80 :443
+	 * eg.  https://www.baidu.com
+	 */
+	public String getShortUrl(IHttpRequestResponse messageInfo) {
+		return messageInfo.getHttpService().toString(); //this result of this method doesn't contains default port
+	}
+
+	/*
+	 * this return value of url will NOT contains default port, 80 :443
+	 */
+	public URL getURL(IHttpRequestResponse messageInfo){
+		if (null == messageInfo) return null;
+		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
+		URL url = analyzeRequest.getUrl();
+		if (url.getProtocol().equalsIgnoreCase("https") && url.getPort() == 443) {
+			try {
+				return new URL(url.toString().replaceFirst(":443/", ":/"));
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+		}
+		if (url.getProtocol().equalsIgnoreCase("http") && url.getPort() == 80) {
+			try {
+				return new URL(url.toString().replaceFirst(":80/", ":/"));
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+		}
+		return url;
 	}
 
 	public String getHost(IHttpRequestResponse messageInfo) {
