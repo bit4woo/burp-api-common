@@ -15,6 +15,7 @@ import java.util.Map.Entry;
 public class Getter {
 	private static IExtensionHelpers helpers;
 	private final static String Header_Spliter = ": ";
+	private final static String Header_Spliter_Alteration = ":";
 	private final static String Header_firstLine_Spliter = " ";
 
 	public Getter(IExtensionHelpers helpers) {
@@ -110,9 +111,15 @@ public class Getter {
 				String headerValue = header.split(Header_firstLine_Spliter, 2)[1];
 				result.put(headerName, headerValue);
 			}else {
-				String headerName = header.split(Header_Spliter, 2)[0];//这里的limit=2 可以理解成分割成2份，否则referer可能别分成3份
-				String headerValue = header.split(Header_Spliter, 2)[1];
-				result.put(headerName, headerValue);
+				try {
+					String headerName = header.split(Header_Spliter, 2)[0];//这里的limit=2 可以理解成分割成2份，否则referer可能别分成3份
+					String headerValue = header.split(Header_Spliter, 2)[1];
+					result.put(headerName, headerValue);
+				}catch (Exception e) {
+					String headerName = header.split(Header_Spliter_Alteration, 2)[0];
+					String headerValue = header.split(Header_Spliter_Alteration, 2)[1];
+					result.put(headerName, headerValue);
+				}
 			}
 		}
 		return result;
