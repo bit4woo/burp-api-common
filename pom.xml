@@ -5,7 +5,7 @@
 
 	<groupId>com.github.bit4woo</groupId>
 	<artifactId>burp-api-common</artifactId>
-	<version>0.1</version>
+	<version>0.7</version>
 	<packaging>jar</packaging>
 
 	<name>burp-api-common</name>
