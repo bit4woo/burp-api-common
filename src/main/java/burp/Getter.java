@@ -216,7 +216,7 @@ public class Getter {
 	 * eg.  https://www.baidu.com
 	 */
 	public String getShortUrlStringWithoutDefaultPort(IHttpRequestResponse messageInfo) {
-		return messageInfo.getHttpService().toString(); //this result of this method doesn't contains default port
+		return messageInfo.getHttpService().toString()+"/"; //this result of this method doesn't contains default port
 	}
 
 
@@ -259,7 +259,7 @@ public class Getter {
 	 */
 	public URL getShortURL(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
-		String shortUrlString = messageInfo.getHttpService().toString();
+		String shortUrlString = messageInfo.getHttpService().toString()+"/";
 		try {
 			return new URL(shortUrlString);
 		} catch (MalformedURLException e) {
