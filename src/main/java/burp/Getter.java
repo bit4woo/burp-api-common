@@ -1,16 +1,18 @@
 package burp;
+
 import java.net.MalformedURLException;
-/*
- * source code: https://github.com/bit4woo/burp-api-common/blob/master/src/main/java/burp/Getter.java
- * author: bit4woo
- * github: https://github.com/bit4woo
- */
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+
+/*
+ * source code: https://github.com/bit4woo/burp-api-common/blob/master/src/main/java/burp/Getter.java
+ * author: bit4woo
+ * github: https://github.com/bit4woo
+ */
 
 public class Getter {
 	private static IExtensionHelpers helpers;
@@ -35,7 +37,7 @@ public class Getter {
 		}
 		return getHeaderList(messageIsRequest,requestOrResponse);
 	}
-	
+
 	/*
 	 * 获取请求包或者响应包中的header List
 	 */
@@ -198,56 +200,91 @@ public class Getter {
 	 * this return value of url contains default port, 80 :443
 	 * eg. http://bit4woo.com:80/
 	 */
-	public String getShortUrlWithDefaultPort(IHttpRequestResponse messageInfo) {
-		//return messageInfo.getHttpService().toString(); //this result of this method doesn't contains default port
-		URL fullUrl = getURLWithDefaultPort(messageInfo);
-		String shortUrl = fullUrl.toString().replace(fullUrl.getFile(), "/");
-		return shortUrl;
+	public String getShortUrlStringWithDefaultPort(IHttpRequestResponse messageInfo) {
+		URL fullUrl = getFullURLWithDefaultPort(messageInfo);
+		if (fullUrl == null) {
+			return null;
+		}else {
+			String shortUrl = fullUrl.toString().replace(fullUrl.getFile(), "/");
+			return shortUrl;
+		}
 	}
 
-	/*
-	 * 注意，这里获取的URL包含了默认端口！
-	 * this return value of url contains default port, 80 :443
-	 * eg. http://bit4woo.com:80/
-	 */
-	public URL getURLWithDefaultPort(IHttpRequestResponse messageInfo){
-		if (null == messageInfo) return null;
-		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
-		return analyzeRequest.getUrl();
-	}
-	
 	/*
 	 *
 	 * this return value of url will NOT contains default port, 80 :443
 	 * eg.  https://www.baidu.com
 	 */
-	public String getShortUrl(IHttpRequestResponse messageInfo) {
+	public String getShortUrlStringWithoutDefaultPort(IHttpRequestResponse messageInfo) {
 		return messageInfo.getHttpService().toString(); //this result of this method doesn't contains default port
 	}
 
+
+	public String getFullUrlStringWithDefaultPort(IHttpRequestResponse messageInfo) {
+
+		URL fullUrl = getFullURLWithDefaultPort(messageInfo);
+		if (fullUrl == null) {
+			return null;
+		}else {
+			return fullUrl.toString();
+		}
+	}
+
 	/*
-	 * this return value of url will NOT contains default port, 80 :443
+	 *
 	 */
-	public URL getURL(IHttpRequestResponse messageInfo){
+	public String getFullUrlStringWithoutDefaultPort(IHttpRequestResponse messageInfo) {
+		URL fullUrl = getFullURLWithDefaultPort(messageInfo);
+		if (fullUrl == null) {
+			return null;
+		}else {
+			try {
+				if (fullUrl.getProtocol().equalsIgnoreCase("https") && fullUrl.getPort() == 443) {
+					return new URL(fullUrl.toString().replaceFirst(":443/", ":/")).toString();
+				}
+				if (fullUrl.getProtocol().equalsIgnoreCase("http") && fullUrl.getPort() == 80) {
+					return new URL(fullUrl.toString().replaceFirst(":80/", ":/")).toString();
+				}
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+	}
+
+	/*
+	 * return Type is URL,not String.
+	 * use equal() function to compare URL object. the string contains default port or not both OK
+	 * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。
+	 */
+	public URL getShortURL(IHttpRequestResponse messageInfo){
+		if (null == messageInfo) return null;
+		String shortUrlString = messageInfo.getHttpService().toString();
+		try {
+			return new URL(shortUrlString);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/*
+	 * return Type is URL,not String.
+	 * use equal() function to compare URL object. the string contains default port or not both OK
+	 * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。
+	 * 
+	 * 但这个函数的返回结果转换成字符串是包含了默认端口的。
+	 */
+	public final URL getFullURL(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
-		URL url = analyzeRequest.getUrl();
-		if (url.getProtocol().equalsIgnoreCase("https") && url.getPort() == 443) {
-			try {
-				return new URL(url.toString().replaceFirst(":443/", ":/"));
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
-		}
-		if (url.getProtocol().equalsIgnoreCase("http") && url.getPort() == 80) {
-			try {
-				return new URL(url.toString().replaceFirst(":80/", ":/"));
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
-		}
-		return url;
+		return analyzeRequest.getUrl();
 	}
+
+	private final URL getFullURLWithDefaultPort(IHttpRequestResponse messageInfo){
+		return getFullURL(messageInfo);
+	}
+
 
 	public String getHost(IHttpRequestResponse messageInfo) {
 		return messageInfo.getHttpService().getHost();
