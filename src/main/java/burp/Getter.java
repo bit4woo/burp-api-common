@@ -200,6 +200,7 @@ public class Getter {
 	 * this return value of url contains default port, 80 :443
 	 * eg. http://bit4woo.com:80/
 	 */
+	@Deprecated
 	public String getShortUrlStringWithDefaultPort(IHttpRequestResponse messageInfo) {
 		URL fullUrl = getFullURLWithDefaultPort(messageInfo);
 		if (fullUrl == null) {
@@ -215,11 +216,12 @@ public class Getter {
 	 * this return value of url will NOT contains default port, 80 :443
 	 * eg.  https://www.baidu.com
 	 */
+	@Deprecated
 	public String getShortUrlStringWithoutDefaultPort(IHttpRequestResponse messageInfo) {
 		return messageInfo.getHttpService().toString()+"/"; //this result of this method doesn't contains default port
 	}
 
-
+	@Deprecated
 	public String getFullUrlStringWithDefaultPort(IHttpRequestResponse messageInfo) {
 
 		URL fullUrl = getFullURLWithDefaultPort(messageInfo);
@@ -233,6 +235,7 @@ public class Getter {
 	/*
 	 *
 	 */
+	@Deprecated
 	public String getFullUrlStringWithoutDefaultPort(IHttpRequestResponse messageInfo) {
 		URL fullUrl = getFullURLWithDefaultPort(messageInfo);
 		if (fullUrl == null) {
@@ -254,12 +257,15 @@ public class Getter {
 
 	/*
 	 * return Type is URL,not String.
-	 * use equal() function to compare URL object. the string contains default port or not both OK
-	 * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。
+	 * use equal() function to compare URL object. the string contains default port or not both OK, but the path(/) is sensitive
+	 * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。但最后的斜杠path却是有关系的。
+	 * 
+	 * eg. http://bit4woo.com:80/ 包含默认端口和默认path(/)
 	 */
 	public URL getShortURL(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
-		String shortUrlString = messageInfo.getHttpService().toString()+"/";
+		String shortUrlString = messageInfo.getHttpService().toString();//http://www.baidu.com
+		shortUrlString = formateURLString(shortUrlString);
 		try {
 			return new URL(shortUrlString);
 		} catch (MalformedURLException e) {
@@ -270,10 +276,11 @@ public class Getter {
 
 	/*
 	 * return Type is URL,not String.
-	 * use equal() function to compare URL object. the string contains default port or not both OK
-	 * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。
+	 * use equal() function to compare URL object. the string contains default port or not both OK, but the path(/) is sensitive
+	 * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。但最后的斜杠path却是有关系的。
 	 * 
-	 * 但这个函数的返回结果转换成字符串是包含了默认端口的。
+	 * 这个函数的返回结果转换成字符串是包含了默认端口的。
+	 * http://bit4woo.com:80/test.html#123
 	 */
 	public final URL getFullURL(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
@@ -281,8 +288,38 @@ public class Getter {
 		return analyzeRequest.getUrl();
 	}
 
+	@Deprecated
 	private final URL getFullURLWithDefaultPort(IHttpRequestResponse messageInfo){
 		return getFullURL(messageInfo);
+	}
+	
+	
+	/*
+	 * to let url String contains default port(80\443) and default path(/)
+	 * 
+	 * from: http://bit4woo.com
+	 * to  : http://bit4woo.com:80/
+	 */
+	public static String formateURLString(String urlString) {
+        try {
+        	//urlString = "https://www.runoob.com";
+			URL url = new URL(urlString);
+			String host = url.getHost();
+			int port = url.getPort();
+			String path = url.getPath();
+			
+			if (port == -1) {
+				String newHost = url.getHost()+":"+url.getDefaultPort();
+				urlString = urlString.replace(host, newHost);
+			}
+			
+			if (path.equals("")) {
+				urlString = urlString+"/";
+			}
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return urlString;
 	}
 
 
