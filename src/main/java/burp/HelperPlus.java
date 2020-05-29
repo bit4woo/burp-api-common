@@ -135,7 +135,7 @@ public class HelperPlus {
 		for (Entry<String,String> header:Headers.entrySet()) {
 			String key = header.getKey();
 			String value = header.getValue();
-			if (key.contains("HTTP/") || value.contains("HTTP/")) {//识别第一行
+			if (value.contains("HTTP/") && value.trim().startsWith("/")) {//识别第一行,这个方法有缺陷User-Agent: okhttp/3.12.1
 				String item = key+Header_firstLine_Spliter+value;
 				result.add(0, item);
 			}else {
@@ -293,8 +293,8 @@ public class HelperPlus {
 	private final URL getFullURLWithDefaultPort(IHttpRequestResponse messageInfo){
 		return getFullURL(messageInfo);
 	}
-	
-	
+
+
 	/*
 	 * to let url String contains default port(80\443) and default path(/)
 	 * 
@@ -302,18 +302,18 @@ public class HelperPlus {
 	 * to  : http://bit4woo.com:80/
 	 */
 	public static String formateURLString(String urlString) {
-        try {
-        	//urlString = "https://www.runoob.com";
+		try {
+			//urlString = "https://www.runoob.com";
 			URL url = new URL(urlString);
 			String host = url.getHost();
 			int port = url.getPort();
 			String path = url.getPath();
-			
+
 			if (port == -1) {
 				String newHost = url.getHost()+":"+url.getDefaultPort();
 				urlString = urlString.replace(host, newHost);
 			}
-			
+
 			if (path.equals("")) {
 				urlString = urlString+"/";
 			}
@@ -377,7 +377,7 @@ public class HelperPlus {
 			return null;
 		}
 	}
-	
+
 	public IHttpRequestResponse updateBody(boolean isRequest,IHttpRequestResponse messageInfo,byte[] newBody) {
 		if (isRequest) {
 			List<String> Headers = getHeaderList(isRequest, messageInfo);
@@ -390,26 +390,15 @@ public class HelperPlus {
 		}
 		return messageInfo;
 	}
-	
+
 	public byte[] updateBody(boolean isRequest,byte[] requestOrResponse,byte[] newBody) {
 		if (requestOrResponse == null){
 			return null;
 		}
-		int bodyOffset = -1;
-		if(isRequest) {
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(requestOrResponse);
-			bodyOffset = analyzeRequest.getBodyOffset();
-		}else {
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(requestOrResponse);
-			bodyOffset = analyzeResponse.getBodyOffset();
-		}
-		byte[] byte_header = Arrays.copyOfRange(requestOrResponse,0, bodyOffset);
-		byte[] byte_header
-		byte[] byte_body = Arrays.copyOfRange(requestOrResponse, bodyOffset, requestOrResponse.length);//not length-1
-		//String body = new String(byte_body); //byte[] to String
-		return byte_body;
+		List<String> Headers = getHeaderList(isRequest, requestOrResponse);
+		return helpers.buildHttpMessage(Headers,newBody);
 	}
-	
+
 	/*
 	 * put 操作，类似于Map中的put，如果存在就覆盖，不存在就新增
 	 */
@@ -418,7 +407,7 @@ public class HelperPlus {
 		Headers.put(headerKey, headerKey);
 		List<String> newHeaders = headerMapToHeaderList(Headers);
 		byte[] body = getBody(isRequest,messageInfo);
-		
+
 		if (isRequest) {
 			byte[] request = helpers.buildHttpMessage(newHeaders,body);
 			messageInfo.setRequest(request);
@@ -428,13 +417,13 @@ public class HelperPlus {
 		}
 		return messageInfo;
 	}
-	
+
 	public byte[] putHeader(boolean isRequest,byte[] requestOrResponse,String headerKey, String headerValue) {
 		LinkedHashMap<String, String> Headers = getHeaderMap(isRequest, requestOrResponse);
 		Headers.put(headerKey, headerKey);
 		List<String> newHeaders = headerMapToHeaderList(Headers);
 		byte[] body = getBody(isRequest,requestOrResponse);
-		
+
 		return helpers.buildHttpMessage(newHeaders,body);
 	}
 
