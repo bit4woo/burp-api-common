@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 public class Getter {
 	private static IExtensionHelpers helpers;
 	private final static String Header_Spliter = ":";
+	private final static String Header_Connector = ": ";//contains space
 	private final static String Header_firstLine_Spliter = " ";
 
 	public Getter(IExtensionHelpers helpers) {
@@ -138,7 +139,7 @@ public class Getter {
 				String item = key+Header_firstLine_Spliter+value;
 				result.add(0, item);
 			}else {
-				String item = key+Header_Spliter+value;
+				String item = key+Header_Connector+value;
 				result.add(item);
 			}
 		}
