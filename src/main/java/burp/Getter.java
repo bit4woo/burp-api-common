@@ -135,7 +135,7 @@ public class Getter {
 		for (Entry<String,String> header:Headers.entrySet()) {
 			String key = header.getKey();
 			String value = header.getValue();
-			if (key.contains("HTTP/") || value.contains("HTTP/")) {//识别第一行
+			if (isFirstLine(key,value)) {//识别第一行
 				String item = key+Header_firstLine_Spliter+value;
 				result.add(0, item);
 			}else {
@@ -144,6 +144,21 @@ public class Getter {
 			}
 		}
 		return result;
+	}
+	
+	public static boolean isFirstLine(String key,String Value) {
+		//GET /sys/remark/pages.pvt?t=1593481248723&limit=3&start=0&sysId=2111 HTTP/1.1
+		//HTTP/1.1 200 OK
+		if (key.startsWith("HTTP/")) {//response first line
+			return true;
+		}
+		try {
+			if (Value.split(" ",2)[1].startsWith("HTTP/")) {
+				return true;
+			}
+		}catch(Exception e){}
+		
+		return false;
 	}
 
 	/*
@@ -392,7 +407,12 @@ public class Getter {
 	}
 
 	public static void main(String args[]) {
-		String a= "xxxxx%s%bxxxxxxx";
-		System.out.println(String.format(a, "111"));
+		String key = "POST";
+		String value = "/cbil-ic/services/CosRefundService HTTP/1.1";
+		key = "HTTP/1.1";
+		value = "500 Server Error";
+		key = "User-Agent";
+		value = "okHTTP/3.12.1";
+		System.out.println(isFirstLine(key,value));
 	}
 }
