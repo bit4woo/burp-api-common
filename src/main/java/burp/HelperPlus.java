@@ -4,14 +4,36 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
 /*
- * source code: https://github.com/bit4woo/burp-api-common/blob/master/src/main/java/burp/Getter.java
+ * source code: https://github.com/bit4woo/burp-api-common/blob/master/src/main/java/burp/HelperPlus.java
  * author: bit4woo
  * github: https://github.com/bit4woo
+ * 
+ * getHeaderStr
+ * getHeaderList
+ * getHeader
+ * getHeaderValueOf
+ * 
+ * addOrUpdateHeaderList
+ * removeHeaderList
+ * 
+ * 
+ * getBody
+ * 
+ * shorturl
+ * url
+ * protocol
+ * host
+ * port
+ * Paras
+ * 
+ * method
+ * statusCode
+ * 
+ * 
  */
 
 public class HelperPlus {
@@ -23,14 +45,50 @@ public class HelperPlus {
 	public HelperPlus(IExtensionHelpers helpers) {
 		HelperPlus.helpers = helpers;
 	}
+	/*
+	 * 返回HTTP请求或响应的整个header头部分，于body相对应
+	 */
+	public String getHeadersAsStr(boolean isRequest,byte[] requestOrResponse) {
+		if (requestOrResponse == null){
+			return null;
+		}
+		int bodyOffset = -1;
+		if(isRequest) {
+			IRequestInfo analyzeRequest = helpers.analyzeRequest(requestOrResponse);
+			bodyOffset = analyzeRequest.getBodyOffset();
+		}else {
+			IResponseInfo analyzeResponse = helpers.analyzeResponse(requestOrResponse);
+			bodyOffset = analyzeResponse.getBodyOffset();
+		}
+		byte[] byte_header = Arrays.copyOfRange(requestOrResponse,0,bodyOffset);//not length-1
+		return new String(byte_header);
+	}
+
+	/*
+	 * 返回HTTP请求或响应的整个header头部分，于body相对应
+	 */
+	public String getHeadersAsStr(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
+		if (messageInfo == null){
+			return null;
+		}
+		byte[] requestOrResponse = null;
+		if(messageIsRequest) {
+			requestOrResponse = messageInfo.getRequest();
+		}else {
+			requestOrResponse = messageInfo.getResponse();
+		}
+		return getHeadersAsStr(messageIsRequest, requestOrResponse);
+	}
 
 	/*
 	 * 获取header的字符串数组，是构造burp中请求需要的格式。
 	 * return headers list
 	 */
 	public List<String> getHeaderList(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
-		if (null == messageInfo) return null;
-		byte[] requestOrResponse = null;
+		if (null == messageInfo) {
+			return new ArrayList<>();
+		}
+		byte[] requestOrResponse;
 		if(messageIsRequest) {
 			requestOrResponse = messageInfo.getRequest();
 		}else {
@@ -43,7 +101,9 @@ public class HelperPlus {
 	 * 获取请求包或者响应包中的header List
 	 */
 	public List<String> getHeaderList(boolean IsRequest,byte[] requestOrResponse) {
-		if (null == requestOrResponse) return null;
+		if (null == requestOrResponse) {
+			return new ArrayList<>();
+		}
 		if(IsRequest) {
 			IRequestInfo analyzeRequest = helpers.analyzeRequest(requestOrResponse);
 			List<String> headers = analyzeRequest.getHeaders();
@@ -55,128 +115,100 @@ public class HelperPlus {
 		}
 	}
 
-	/*
-	 * 获取所有headers，当做一个string看待。
-	 * 主要用于判断是否包含某个特殊字符串
-	 * List<String> getHeaders 调用toString()方法，得到如下格式：[111111, 2222]
-	 * 就能满足上面的场景了,废弃这个函数
-	 */
-	@Deprecated
-	public String getHeaderString(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
-		List<String> headers =null;
-		StringBuilder headerString = new StringBuilder();
-		if(messageIsRequest) {
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
-			headers = analyzeRequest.getHeaders();
-		}else {
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(messageInfo.getResponse());
-			headers = analyzeResponse.getHeaders();
-		}
-
-		for (String header : headers) {
-			headerString.append(header);
-		}
-
-		return headerString.toString();
-	}
-
-	/*
-	 * 获取header的map格式，key:value形式
-	 * 这种方式可以用put函数轻松实现：如果有则update，如果无则add。
-	 * ！！！注意：这个方法获取到的map，第一行将分割成形如 key = "GET", value= "/cps.gec/limit/information.html HTTP/1.1"
-	 * 响应包则分割成形如：key =  "HTTP/1.1", value="200 OK"
-	 */
-	public LinkedHashMap<String,String> getHeaderMap(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
-		if (messageInfo == null) return null;
-		List<String> headers=getHeaderList(messageIsRequest, messageInfo);
-		return headerListToHeaderMap(headers);
-	}
-
-	/*
-	 * use LinkedHashMap to keep headers in order
-	 */
-	public LinkedHashMap<String,String> getHeaderMap(boolean messageIsRequest,byte[] requestOrResponse) {
-		if (requestOrResponse == null) return null;
-		List<String> headers=getHeaderList(messageIsRequest, requestOrResponse);
-		return headerListToHeaderMap(headers);
-	}
-
-	/*
-	 * 仅该类内部调用
-	 */
-	private static LinkedHashMap<String, String> headerListToHeaderMap(List<String> headers) {
-		LinkedHashMap<String,String> result = new LinkedHashMap<String, String>();
-		if (null == headers) return null;
-		for (String header : headers) {
-			if (headers.indexOf(header) == 0) {
-				String headerName = header.split(Header_firstLine_Spliter, 2)[0];//这里的limit=2 可以理解成分割成2份
-				String headerValue = header.split(Header_firstLine_Spliter, 2)[1];
-				result.put(headerName, headerValue);
-			}else {
-				//https://www.w3.org/Protocols/rfc2068/rfc2068-->4.2 Message Headers
-				//https://blog.csdn.net/u012572955/article/details/50144535/
-				//每个头域由一个域名，冒号（:）和域值三部分组成。域名是大小写无关的，域 值前可以添加任何数量的空格符
+	public static List<String> addOrUpdateHeader(List<String> headers,String headerName,String headerValue) {
+		for (String header:headers) {
+			if (header.contains(":")) {
 				try {
-					String headerName = header.split(Header_Spliter, 2)[0].trim();//这里的limit=2 可以理解成分割成2份，否则referer可能别分成3份
-					String headerValue = header.split(Header_Spliter, 2)[1].trim();
-					result.put(headerName, headerValue);
+					String headerNameOrigin = header.split(Header_Spliter, 2)[0].trim();//这里的limit=2 可以理解成分割成2份，否则referer可能别分成3份
+					if (headerNameOrigin.equalsIgnoreCase(headerName)) {
+						int index = headers.indexOf(header);
+						headers.remove(header);
+						headers.add(index, headerName+Header_Connector+headerValue);
+						return headers;
+					}
 				}catch (Exception e) {
-					System.out.println("Wrong header -- "+header);
+
 				}
 			}
 		}
-		return result;
+		headers.add(headerName+Header_Connector+headerValue);
+		return headers;
 	}
 
-
-
-	public List<String> headerMapToHeaderList(LinkedHashMap<String,String> Headers){
-		List<String> result = new ArrayList<String>();
-		for (Entry<String,String> header:Headers.entrySet()) {
-			String key = header.getKey();
-			String value = header.getValue();
-			if (value.contains("HTTP/") && value.trim().startsWith("/")) {//识别第一行,这个方法有缺陷User-Agent: okhttp/3.12.1
-				String item = key+Header_firstLine_Spliter+value;
-				result.add(0, item);
-			}else {
-				String item = key+Header_Connector+value;
-				result.add(item);
+	public static List<String> removeHeader(List<String> headers,String headerNameOrHeader) {
+		Iterator<String> it = headers.iterator();
+		while(it.hasNext()) {
+			String header = it.next();
+			String headerName = header.split(Header_Spliter, 2)[0].trim();
+			if (header.toLowerCase().startsWith(headerNameOrHeader.toLowerCase().trim())
+					&& headerNameOrHeader.length() >= headerName.length()) {
+				it.remove();
 			}
 		}
-		return result;
+		return headers;
+	}
+
+	public static String getHeaderLine(List<String> headers,String headerName) {
+		if (null ==headers || headerName ==null) return null;
+		for (String header:headers) {
+			if (header.contains(":")) {
+				try {
+					String headerNameOrigin = header.split(Header_Spliter, 2)[0].trim();//这里的limit=2 可以理解成分割成2份，否则referer可能别分成3份
+					if (headerNameOrigin.equalsIgnoreCase(headerName)) {
+						return header;
+					}
+				}catch (Exception e) {
+
+				}
+			}
+		}
+		return null;
+	}
+
+	public String getHeaderLine(boolean messageIsRequest,IHttpRequestResponse messageInfo, String headerName) {
+		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
+		return getHeaderLine(headers,headerName);
+	}
+
+	public String getHeader(boolean messageIsRequest,byte[] requestOrResponse, String headerName) {
+		List<String> headers=getHeaderList(messageIsRequest,requestOrResponse);
+		return getHeaderLine(headers,headerName);
+	}
+
+	public String getHeaderValueOf(List<String> headers,String headerName) {
+		if (null ==headers || headerName ==null) return null;
+		for (String header:headers) {
+			if (header.contains(":")) {
+				try {
+					String headerNameOrigin = header.split(Header_Spliter, 2)[0].trim();//这里的limit=2 可以理解成分割成2份，否则referer可能别分成3份
+					String headerValue = header.split(Header_Spliter, 2)[1].trim();
+					if (headerNameOrigin.equalsIgnoreCase(headerName)) {
+						return headerValue;
+					}
+				}catch (Exception e) {
+
+				}
+			}
+		}
+		return null;
 	}
 
 	/*
 	 * 获取某个header的值，如果没有此header，返回null。
 	 */
 	public String getHeaderValueOf(boolean messageIsRequest,IHttpRequestResponse messageInfo, String headerName) {
-		LinkedHashMap<String, String> headers = getHeaderMap(messageIsRequest,messageInfo);
-		if (null ==headers || headerName ==null) return null;
-		return headers.get(headerName.trim());
+		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
+		return getHeaderValueOf(headers,headerName);
 	}
 
 	/*
 	 * 获取某个header的值，如果没有此header，返回null。
 	 */
 	public String getHeaderValueOf(boolean messageIsRequest,byte[] requestOrResponse, String headerName) {
-		LinkedHashMap<String, String> headers=getHeaderMap(messageIsRequest,requestOrResponse);
-		if (null ==headers || headerName ==null) return null;
-		return headers.get(headerName.trim());
+		List<String> headers=getHeaderList(messageIsRequest,requestOrResponse);
+		return getHeaderValueOf(headers,headerName);
 	}
 
-
-	public byte[] getBody(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
-		if (messageInfo == null){
-			return null;
-		}
-		byte[] requestOrResponse = null;
-		if(messageIsRequest) {
-			requestOrResponse = messageInfo.getRequest();
-		}else {
-			requestOrResponse = messageInfo.getResponse();
-		}
-		return getBody(messageIsRequest, requestOrResponse);
-	}
 
 	public byte[] getBody(boolean isRequest,byte[] requestOrResponse) {
 		if (requestOrResponse == null){
@@ -195,72 +227,27 @@ public class HelperPlus {
 		return byte_body;
 	}
 
-
-	/*
-	 * 注意，这里获取的URL包含了默认端口！
-	 * this return value of url contains default port, 80 :443
-	 * eg. http://bit4woo.com:80/
-	 */
-	@Deprecated
-	public String getShortUrlStringWithDefaultPort(IHttpRequestResponse messageInfo) {
-		URL fullUrl = getFullURLWithDefaultPort(messageInfo);
-		if (fullUrl == null) {
-			return null;
-		}else {
-			String shortUrl = fullUrl.toString().replace(fullUrl.getFile(), "/");
-			return shortUrl;
-		}
-	}
-
-	/*
-	 *
-	 * this return value of url will NOT contains default port, 80 :443
-	 * eg.  https://www.baidu.com
-	 */
-	@Deprecated
-	public String getShortUrlStringWithoutDefaultPort(IHttpRequestResponse messageInfo) {
-		return messageInfo.getHttpService().toString()+"/"; //this result of this method doesn't contains default port
-	}
-
-	@Deprecated
-	public String getFullUrlStringWithDefaultPort(IHttpRequestResponse messageInfo) {
-
-		URL fullUrl = getFullURLWithDefaultPort(messageInfo);
-		if (fullUrl == null) {
-			return null;
-		}else {
-			return fullUrl.toString();
-		}
-	}
-
-	/*
-	 *
-	 */
-	@Deprecated
-	public String getFullUrlStringWithoutDefaultPort(IHttpRequestResponse messageInfo) {
-		URL fullUrl = getFullURLWithDefaultPort(messageInfo);
-		if (fullUrl == null) {
-			return null;
-		}else {
-			try {
-				if (fullUrl.getProtocol().equalsIgnoreCase("https") && fullUrl.getPort() == 443) {
-					return new URL(fullUrl.toString().replaceFirst(":443/", ":/")).toString();
-				}
-				if (fullUrl.getProtocol().equalsIgnoreCase("http") && fullUrl.getPort() == 80) {
-					return new URL(fullUrl.toString().replaceFirst(":80/", ":/")).toString();
-				}
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
+	public byte[] getBody(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
+		if (messageInfo == null){
 			return null;
 		}
+		byte[] requestOrResponse = null;
+		if(messageIsRequest) {
+			requestOrResponse = messageInfo.getRequest();
+		}else {
+			requestOrResponse = messageInfo.getResponse();
+		}
+		return getBody(messageIsRequest, requestOrResponse);
 	}
 
 	/*
 	 * return Type is URL,not String.
-	 * use equal() function to compare URL object. the string contains default port or not both OK, but the path(/) is sensitive
+	 * use equal() function to compare URL object. 
+	 * the string contains default port or not both OK, but the path(/) is sensitive
 	 * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。但最后的斜杠path却是有关系的。
 	 * 
+	 * result example:
+	 *  
 	 * eg. http://bit4woo.com:80/ 包含默认端口和默认path(/)
 	 */
 	public URL getShortURL(IHttpRequestResponse messageInfo){
@@ -287,11 +274,6 @@ public class HelperPlus {
 		if (null == messageInfo) return null;
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
 		return analyzeRequest.getUrl();
-	}
-
-	@Deprecated
-	private final URL getFullURLWithDefaultPort(IHttpRequestResponse messageInfo){
-		return getFullURL(messageInfo);
 	}
 
 
@@ -323,9 +305,16 @@ public class HelperPlus {
 		return urlString;
 	}
 
-
 	public String getHost(IHttpRequestResponse messageInfo) {
 		return messageInfo.getHttpService().getHost();
+	}
+
+	public String getProtocol(IHttpRequestResponse messageInfo) {
+		return messageInfo.getHttpService().getProtocol();
+	}
+
+	public int getPort(IHttpRequestResponse messageInfo) {
+		return messageInfo.getHttpService().getPort();
 	}
 
 	public short getStatusCode(IHttpRequestResponse messageInfo) {
@@ -378,55 +367,6 @@ public class HelperPlus {
 		}
 	}
 
-	public IHttpRequestResponse updateBody(boolean isRequest,IHttpRequestResponse messageInfo,byte[] newBody) {
-		if (isRequest) {
-			List<String> Headers = getHeaderList(isRequest, messageInfo);
-			byte[] request = helpers.buildHttpMessage(Headers,newBody);
-			messageInfo.setRequest(request);
-		}else {
-			List<String> Headers = getHeaderList(isRequest, messageInfo);
-			byte[] response = helpers.buildHttpMessage(Headers,newBody);
-			messageInfo.setResponse(response);
-		}
-		return messageInfo;
-	}
-
-	public byte[] updateBody(boolean isRequest,byte[] requestOrResponse,byte[] newBody) {
-		if (requestOrResponse == null){
-			return null;
-		}
-		List<String> Headers = getHeaderList(isRequest, requestOrResponse);
-		return helpers.buildHttpMessage(Headers,newBody);
-	}
-
-	/*
-	 * put 操作，类似于Map中的put，如果存在就覆盖，不存在就新增
-	 */
-	public IHttpRequestResponse putHeader(boolean isRequest,IHttpRequestResponse messageInfo,String headerKey, String headerValue) {
-		LinkedHashMap<String, String> Headers = getHeaderMap(isRequest, messageInfo);
-		Headers.put(headerKey, headerKey);
-		List<String> newHeaders = headerMapToHeaderList(Headers);
-		byte[] body = getBody(isRequest,messageInfo);
-
-		if (isRequest) {
-			byte[] request = helpers.buildHttpMessage(newHeaders,body);
-			messageInfo.setRequest(request);
-		}else {
-			byte[] response = helpers.buildHttpMessage(newHeaders,body);
-			messageInfo.setResponse(response);
-		}
-		return messageInfo;
-	}
-
-	public byte[] putHeader(boolean isRequest,byte[] requestOrResponse,String headerKey, String headerValue) {
-		LinkedHashMap<String, String> Headers = getHeaderMap(isRequest, requestOrResponse);
-		Headers.put(headerKey, headerKey);
-		List<String> newHeaders = headerMapToHeaderList(Headers);
-		byte[] body = getBody(isRequest,requestOrResponse);
-
-		return helpers.buildHttpMessage(newHeaders,body);
-	}
-
 	public String getHTTPBasicCredentials(IHttpRequestResponse messageInfo) throws Exception{
 		String authHeader  = getHeaderValueOf(true, messageInfo, "Authorization").trim();
 		String[] parts = authHeader.split("\\s");
@@ -441,7 +381,14 @@ public class HelperPlus {
 	}
 
 	public static void main(String args[]) {
-		String a= "xxxxx%s%bxxxxxxx";
-		System.out.println(String.format(a, "111"));
+		List<String> headerList = new ArrayList<String>();
+		headerList.add("User-Agent: sssss");
+		headerList.add("Use: sssss");
+		headerList.add("User: sssss");
+		headerList.add("Agent: sssss");
+		List<String> newHeader = removeHeader(headerList,"Use");
+		System.out.println(newHeader.toString());
+		newHeader = addOrUpdateHeader(headerList,"Use1","xxxx");
+		System.out.println(newHeader.toString());
 	}
 }
