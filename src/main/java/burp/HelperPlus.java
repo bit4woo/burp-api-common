@@ -12,22 +12,29 @@ import java.util.List;
  * author: bit4woo
  * github: https://github.com/bit4woo
  * 
- * getHeaderStr
+ * String getHeadersAsStr(boolean isRequest,byte[] requestOrResponse)
+ * String getHeadersAsStr(boolean messageIsRequest,IHttpRequestResponse messageInfo) 
  * getHeaderList
- * getHeader
+ * getHeaderLine
  * getHeaderValueOf
  * 
  * addOrUpdateHeaderList
  * removeHeaderList
  * 
- * 
  * getBody
+ * updateBoby #将body看做一个整体进行替换
  * 
  * shorturl
  * url
  * protocol
  * host
  * port
+ * 
+ * getParameters
+ * addParameter --Helper中已经存在
+ * byte[] addParameter(byte[] request, IParameter parameter);
+ * byte[] removeParameter(byte[] request, IParameter parameter);
+ * byte[] updateParameter(byte[] request, IParameter parameter);
  * Paras
  * 
  * method
@@ -36,7 +43,7 @@ import java.util.List;
  * 
  */
 
-public class HelperPlus {
+public class HelperPlus{
 	private static IExtensionHelpers helpers;
 	private final static String Header_Spliter = ":";
 	private final static String Header_Connector = ": ";//contains space
@@ -46,7 +53,7 @@ public class HelperPlus {
 		HelperPlus.helpers = helpers;
 	}
 	/*
-	 * 返回HTTP请求或响应的整个header头部分，于body相对应
+	 * 返回HTTP请求或响应的整个header头部分，与body相对应
 	 */
 	public String getHeadersAsStr(boolean isRequest,byte[] requestOrResponse) {
 		if (requestOrResponse == null){
@@ -65,7 +72,7 @@ public class HelperPlus {
 	}
 
 	/*
-	 * 返回HTTP请求或响应的整个header头部分，于body相对应
+	 * 返回HTTP请求或响应的整个header头部分，与body相对应
 	 */
 	public String getHeadersAsStr(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
 		if (messageInfo == null){
@@ -84,7 +91,7 @@ public class HelperPlus {
 	 * 获取header的字符串数组，是构造burp中请求需要的格式。
 	 * return headers list
 	 */
-	public List<String> getHeaderList(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
+	public static List<String> getHeaderList(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
 		if (null == messageInfo) {
 			return new ArrayList<>();
 		}
@@ -100,7 +107,7 @@ public class HelperPlus {
 	/*
 	 * 获取请求包或者响应包中的header List
 	 */
-	public List<String> getHeaderList(boolean IsRequest,byte[] requestOrResponse) {
+	public static List<String> getHeaderList(boolean IsRequest,byte[] requestOrResponse) {
 		if (null == requestOrResponse) {
 			return new ArrayList<>();
 		}
@@ -134,20 +141,68 @@ public class HelperPlus {
 		headers.add(headerName+Header_Connector+headerValue);
 		return headers;
 	}
+	
+	
+	public static IHttpRequestResponse addOrUpdateHeader(boolean messageIsRequest,IHttpRequestResponse messageInfo,String headerName,String headerValue){
+		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
+		byte[] body = getBody(messageIsRequest,messageInfo);
+		headers = addOrUpdateHeader(headers,headerName,headerValue);
+		byte[] RequestOrResponse = helpers.buildHttpMessage(headers, body);
+		if (messageIsRequest) {
+			messageInfo.setRequest(RequestOrResponse);
+		}else {
+			messageInfo.setResponse(RequestOrResponse);
+		}
+		return messageInfo;
+	}
+	
+	public static byte[] addOrUpdateHeader(boolean isRequest,byte[] requestOrResponse,String headerName,String headerValue){
+		List<String> headers = getHeaderList(isRequest,requestOrResponse);
+		byte[] body = getBody(isRequest,requestOrResponse);
+		headers = addOrUpdateHeader(headers,headerName,headerValue);
+		return helpers.buildHttpMessage(headers, body);
+	}
 
-	public static List<String> removeHeader(List<String> headers,String headerNameOrHeader) {
+	public static List<String> removeHeader(List<String> headers,String headerNameOrHeaderLine) {
 		Iterator<String> it = headers.iterator();
 		while(it.hasNext()) {
 			String header = it.next();
 			String headerName = header.split(Header_Spliter, 2)[0].trim();
-			if (header.toLowerCase().startsWith(headerNameOrHeader.toLowerCase().trim())
-					&& headerNameOrHeader.length() >= headerName.length()) {
+			if (header.toLowerCase().startsWith(headerNameOrHeaderLine.toLowerCase().trim())
+					&& headerNameOrHeaderLine.length() >= headerName.length()) {
 				it.remove();
 			}
 		}
 		return headers;
 	}
+	
+	public static IHttpRequestResponse removeHeader(boolean messageIsRequest,IHttpRequestResponse messageInfo,String headerNameOrHeaderLine){
+		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
+		byte[] body = getBody(messageIsRequest,messageInfo);
+		headers = removeHeader(headers,headerNameOrHeaderLine);
+		byte[] RequestOrResponse = helpers.buildHttpMessage(headers, body);
+		if (messageIsRequest) {
+			messageInfo.setRequest(RequestOrResponse);
+		}else {
+			messageInfo.setResponse(RequestOrResponse);
+		}
+		return messageInfo;
+	}
+	
+	/*
+	 * 删除特定的header。
+	 */
+	public static byte[] removeHeader(boolean isRequest,byte[] requestOrResponse, String headerNameOrHeaderLine) {
+		List<String> headers = getHeaderList(isRequest,requestOrResponse);
+		byte[] body = getBody(isRequest,requestOrResponse);
+		headers = removeHeader(headers,headerNameOrHeaderLine);
+		return helpers.buildHttpMessage(headers, body);
+	}
+	
 
+	/*
+	 * 获取某个header的整行，如果没有此header，返回null，以header的名称作为查找依据。
+	 */
 	public static String getHeaderLine(List<String> headers,String headerName) {
 		if (null ==headers || headerName ==null) return null;
 		for (String header:headers) {
@@ -164,17 +219,26 @@ public class HelperPlus {
 		}
 		return null;
 	}
-
+	
+	/*
+	 * 获取某个header的整行，如果没有此header，返回null，以header的名称作为查找依据。
+	 */
 	public String getHeaderLine(boolean messageIsRequest,IHttpRequestResponse messageInfo, String headerName) {
 		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
 		return getHeaderLine(headers,headerName);
 	}
 
-	public String getHeader(boolean messageIsRequest,byte[] requestOrResponse, String headerName) {
+	/*
+	 * 获取某个header的整行，如果没有此header，返回null，以header的名称作为查找依据。
+	 */
+	public String getHeaderLine(boolean messageIsRequest,byte[] requestOrResponse, String headerName) {
 		List<String> headers=getHeaderList(messageIsRequest,requestOrResponse);
 		return getHeaderLine(headers,headerName);
 	}
 
+	/*
+	 * 获取某个header的值，如果没有此header，返回null。
+	 */
 	public String getHeaderValueOf(List<String> headers,String headerName) {
 		if (null ==headers || headerName ==null) return null;
 		for (String header:headers) {
@@ -210,7 +274,7 @@ public class HelperPlus {
 	}
 
 
-	public byte[] getBody(boolean isRequest,byte[] requestOrResponse) {
+	public static byte[] getBody(boolean isRequest,byte[] requestOrResponse) {
 		if (requestOrResponse == null){
 			return null;
 		}
@@ -227,7 +291,7 @@ public class HelperPlus {
 		return byte_body;
 	}
 
-	public byte[] getBody(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
+	public static byte[] getBody(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
 		if (messageInfo == null){
 			return null;
 		}
@@ -238,6 +302,22 @@ public class HelperPlus {
 			requestOrResponse = messageInfo.getResponse();
 		}
 		return getBody(messageIsRequest, requestOrResponse);
+	}
+	
+	public static IHttpRequestResponse UpdateBody(boolean messageIsRequest,IHttpRequestResponse messageInfo,byte[] body){
+		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
+		byte[] RequestOrResponse = helpers.buildHttpMessage(headers, body);
+		if (messageIsRequest) {
+			messageInfo.setRequest(RequestOrResponse);
+		}else {
+			messageInfo.setResponse(RequestOrResponse);
+		}
+		return messageInfo;
+	}
+	
+	public static byte[] UpdateBody(boolean isRequest,byte[] requestOrResponse,byte[] body){
+		List<String> headers = getHeaderList(isRequest,requestOrResponse);
+		return helpers.buildHttpMessage(headers, body);
 	}
 
 	/*
@@ -337,15 +417,68 @@ public class HelperPlus {
 		}
 	}
 
-	public List<IParameter> getParas(IHttpRequestResponse messageInfo){
+	public List<IParameter> getParameters(IHttpRequestResponse messageInfo){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
 		return analyzeRequest.getParameters();
 	}
 
-	public List<IParameter> getParas(byte[] request){
+	public List<IParameter> getParameters(byte[] request){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
 		return analyzeRequest.getParameters();
 	}
+	
+	/*
+	 * 根据参数的key查找IParameter对象
+	 * 需要考虑同名参数的情况
+	 */
+	public static List<IParameter> findParameterByKey(List<IParameter> parameters,String key){
+		List<IParameter> result = new ArrayList<IParameter>();
+		for (IParameter para:parameters) {
+			if (para.getName().equalsIgnoreCase(key)){
+				result.add(para);
+			}
+		}
+		return result;
+	}
+	/*
+	 * 使用burp.IExtensionHelpers.getRequestParameter(byte[], String)
+	 */
+	public IParameter getParameterByKey(IHttpRequestResponse messageInfo,String key){
+		return helpers.getRequestParameter(messageInfo.getRequest(), key);
+	}
+
+	public IParameter getParameterByKey(byte[] request,String key){
+		return helpers.getRequestParameter(request, key);
+	}
+	
+	/*
+	 * 根据参数的key和type查找IParameter对象
+	 * 需要考虑同名参数的情况
+	 */
+	public static List<IParameter> findParameterByKeyAndType(List<IParameter> parameters,String key,byte type){
+		List<IParameter> result = new ArrayList<IParameter>();
+		for (IParameter para:parameters) {
+			if (para.getName().equalsIgnoreCase(key) && para.getType() == type){
+				result.add(para);
+			}
+		}
+		return result;
+	}
+
+	public List<IParameter> getParameterByKeyAndType(IHttpRequestResponse messageInfo,String key,byte type){
+		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
+		List<IParameter> paras = analyzeRequest.getParameters();
+		return findParameterByKeyAndType(paras,key,type);
+	}
+
+	public List<IParameter> getParameterByKeyAndType(byte[] request,String key,byte type){
+		IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
+		return findParameterByKeyAndType(analyzeRequest.getParameters(),key,type);
+	}
+	
+	
+	
+	
 
 	public String getMethod(IHttpRequestResponse messageInfo){
 		if (messageInfo == null || messageInfo.getRequest() == null) {
