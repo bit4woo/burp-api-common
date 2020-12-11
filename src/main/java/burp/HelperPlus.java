@@ -91,7 +91,7 @@ public class HelperPlus{
 	 * 获取header的字符串数组，是构造burp中请求需要的格式。
 	 * return headers list
 	 */
-	public static List<String> getHeaderList(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
+	public List<String> getHeaderList(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
 		if (null == messageInfo) {
 			return new ArrayList<>();
 		}
@@ -107,7 +107,7 @@ public class HelperPlus{
 	/*
 	 * 获取请求包或者响应包中的header List
 	 */
-	public static List<String> getHeaderList(boolean IsRequest,byte[] requestOrResponse) {
+	public List<String> getHeaderList(boolean IsRequest,byte[] requestOrResponse) {
 		if (null == requestOrResponse) {
 			return new ArrayList<>();
 		}
@@ -143,7 +143,7 @@ public class HelperPlus{
 	}
 	
 	
-	public static IHttpRequestResponse addOrUpdateHeader(boolean messageIsRequest,IHttpRequestResponse messageInfo,String headerName,String headerValue){
+	public IHttpRequestResponse addOrUpdateHeader(boolean messageIsRequest,IHttpRequestResponse messageInfo,String headerName,String headerValue){
 		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
 		byte[] body = getBody(messageIsRequest,messageInfo);
 		headers = addOrUpdateHeader(headers,headerName,headerValue);
@@ -156,7 +156,7 @@ public class HelperPlus{
 		return messageInfo;
 	}
 	
-	public static byte[] addOrUpdateHeader(boolean isRequest,byte[] requestOrResponse,String headerName,String headerValue){
+	public byte[] addOrUpdateHeader(boolean isRequest,byte[] requestOrResponse,String headerName,String headerValue){
 		List<String> headers = getHeaderList(isRequest,requestOrResponse);
 		byte[] body = getBody(isRequest,requestOrResponse);
 		headers = addOrUpdateHeader(headers,headerName,headerValue);
@@ -176,7 +176,7 @@ public class HelperPlus{
 		return headers;
 	}
 	
-	public static IHttpRequestResponse removeHeader(boolean messageIsRequest,IHttpRequestResponse messageInfo,String headerNameOrHeaderLine){
+	public IHttpRequestResponse removeHeader(boolean messageIsRequest,IHttpRequestResponse messageInfo,String headerNameOrHeaderLine){
 		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
 		byte[] body = getBody(messageIsRequest,messageInfo);
 		headers = removeHeader(headers,headerNameOrHeaderLine);
@@ -192,7 +192,7 @@ public class HelperPlus{
 	/*
 	 * 删除特定的header。
 	 */
-	public static byte[] removeHeader(boolean isRequest,byte[] requestOrResponse, String headerNameOrHeaderLine) {
+	public byte[] removeHeader(boolean isRequest,byte[] requestOrResponse, String headerNameOrHeaderLine) {
 		List<String> headers = getHeaderList(isRequest,requestOrResponse);
 		byte[] body = getBody(isRequest,requestOrResponse);
 		headers = removeHeader(headers,headerNameOrHeaderLine);
@@ -239,7 +239,7 @@ public class HelperPlus{
 	/*
 	 * 获取某个header的值，如果没有此header，返回null。
 	 */
-	public String getHeaderValueOf(List<String> headers,String headerName) {
+	public static String getHeaderValueOf(List<String> headers,String headerName) {
 		if (null ==headers || headerName ==null) return null;
 		for (String header:headers) {
 			if (header.contains(":")) {
@@ -304,7 +304,7 @@ public class HelperPlus{
 		return getBody(messageIsRequest, requestOrResponse);
 	}
 	
-	public static IHttpRequestResponse UpdateBody(boolean messageIsRequest,IHttpRequestResponse messageInfo,byte[] body){
+	public IHttpRequestResponse UpdateBody(boolean messageIsRequest,IHttpRequestResponse messageInfo,byte[] body){
 		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
 		byte[] RequestOrResponse = helpers.buildHttpMessage(headers, body);
 		if (messageIsRequest) {
@@ -315,7 +315,7 @@ public class HelperPlus{
 		return messageInfo;
 	}
 	
-	public static byte[] UpdateBody(boolean isRequest,byte[] requestOrResponse,byte[] body){
+	public byte[] UpdateBody(boolean isRequest,byte[] requestOrResponse,byte[] body){
 		List<String> headers = getHeaderList(isRequest,requestOrResponse);
 		return helpers.buildHttpMessage(headers, body);
 	}
@@ -330,7 +330,7 @@ public class HelperPlus{
 	 *  
 	 * eg. http://bit4woo.com:80/ 包含默认端口和默认path(/)
 	 */
-	public URL getShortURL(IHttpRequestResponse messageInfo){
+	public static URL getShortURL(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
 		String shortUrlString = messageInfo.getHttpService().toString();//http://www.baidu.com
 		shortUrlString = formateURLString(shortUrlString);
@@ -385,15 +385,15 @@ public class HelperPlus{
 		return urlString;
 	}
 
-	public String getHost(IHttpRequestResponse messageInfo) {
+	public static String getHost(IHttpRequestResponse messageInfo) {
 		return messageInfo.getHttpService().getHost();
 	}
 
-	public String getProtocol(IHttpRequestResponse messageInfo) {
+	public static String getProtocol(IHttpRequestResponse messageInfo) {
 		return messageInfo.getHttpService().getProtocol();
 	}
 
-	public int getPort(IHttpRequestResponse messageInfo) {
+	public static int getPort(IHttpRequestResponse messageInfo) {
 		return messageInfo.getHttpService().getPort();
 	}
 
@@ -416,6 +416,11 @@ public class HelperPlus{
 			return -1;
 		}
 	}
+	
+	
+	
+
+	
 
 	public List<IParameter> getParameters(IHttpRequestResponse messageInfo){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
@@ -427,21 +432,9 @@ public class HelperPlus{
 		return analyzeRequest.getParameters();
 	}
 	
+
 	/*
-	 * 根据参数的key查找IParameter对象
-	 * 需要考虑同名参数的情况
-	 */
-	public static List<IParameter> findParameterByKey(List<IParameter> parameters,String key){
-		List<IParameter> result = new ArrayList<IParameter>();
-		for (IParameter para:parameters) {
-			if (para.getName().equalsIgnoreCase(key)){
-				result.add(para);
-			}
-		}
-		return result;
-	}
-	/*
-	 * 使用burp.IExtensionHelpers.getRequestParameter(byte[], String)
+	 * 使用burp.IExtensionHelpers.getRequestParameter(byte[], String),未考虑同名参数的情况！
 	 */
 	public IParameter getParameterByKey(IHttpRequestResponse messageInfo,String key){
 		return helpers.getRequestParameter(messageInfo.getRequest(), key);
@@ -451,11 +444,29 @@ public class HelperPlus{
 		return helpers.getRequestParameter(request, key);
 	}
 	
+	
+	/*
+	 * 根据参数的key查找IParameter对象，考虑了同名函数的情况，但这种情况很少，几乎用不上。
+	 * 尽量不要使用这个函数
+	 */
+	@Deprecated
+	public static List<IParameter> findParametersByKey(List<IParameter> parameters,String key){
+		List<IParameter> result = new ArrayList<IParameter>();
+		for (IParameter para:parameters) {
+			if (para.getName().equalsIgnoreCase(key)){
+				result.add(para);
+			}
+		}
+		return result;
+	}
+	
 	/*
 	 * 根据参数的key和type查找IParameter对象
-	 * 需要考虑同名参数的情况
+	 * 考虑了同名函数的情况，但这种情况很少，几乎用不上
+	 * 尽量不要使用这个函数
 	 */
-	public static List<IParameter> findParameterByKeyAndType(List<IParameter> parameters,String key,byte type){
+	@Deprecated
+	public static List<IParameter> findParametersByKeyAndType(List<IParameter> parameters,String key,byte type){
 		List<IParameter> result = new ArrayList<IParameter>();
 		for (IParameter para:parameters) {
 			if (para.getName().equalsIgnoreCase(key) && para.getType() == type){
@@ -464,20 +475,51 @@ public class HelperPlus{
 		}
 		return result;
 	}
-
-	public List<IParameter> getParameterByKeyAndType(IHttpRequestResponse messageInfo,String key,byte type){
+	
+	/*
+	 *  考虑了同名函数的情况，但这种情况很少，几乎用不上
+	 *  尽量不要使用这个函数
+	 */
+	@Deprecated
+	public List<IParameter> getParametersByKeyAndType(IHttpRequestResponse messageInfo,String key,byte type){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
 		List<IParameter> paras = analyzeRequest.getParameters();
-		return findParameterByKeyAndType(paras,key,type);
+		return findParametersByKeyAndType(paras,key,type);
 	}
 
-	public List<IParameter> getParameterByKeyAndType(byte[] request,String key,byte type){
+	/*
+	 *  考虑了同名函数的情况，但这种情况很少，几乎用不上
+	 *  尽量不要使用这个函数
+	 */
+	@Deprecated
+	public List<IParameter> getParametersByKeyAndType(byte[] request,String key,byte type){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
-		return findParameterByKeyAndType(analyzeRequest.getParameters(),key,type);
+		return findParametersByKeyAndType(analyzeRequest.getParameters(),key,type);
 	}
 	
 	
+	public IHttpRequestResponse addOrUpdateParameter(IHttpRequestResponse messageInfo,IParameter para){
+		byte[] request = messageInfo.getRequest();
+		request = addOrUpdateParameter(request, para);
+		messageInfo.setRequest(request);
+		return messageInfo;
+	}
 	
+	public byte[] addOrUpdateParameter(byte[] request,IParameter para){
+		IParameter existPara = helpers.getRequestParameter(request, para.getName());
+		if (null != existPara) {
+			request = helpers.removeParameter(request, existPara);
+		}
+		request = helpers.addParameter(request, para);
+		return request;
+	}
+	
+	public IHttpRequestResponse removeParameter(IHttpRequestResponse messageInfo, IParameter parameter) {
+		byte[] request = messageInfo.getRequest();
+		request = helpers.removeParameter(request, parameter);
+		messageInfo.setRequest(request);
+		return messageInfo;
+	}
 	
 
 	public String getMethod(IHttpRequestResponse messageInfo){
