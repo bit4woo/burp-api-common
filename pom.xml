@@ -8,24 +8,15 @@
 	<version>0.1.2</version>
 	<packaging>jar</packaging>
 
-	<name>burp-api-common</name>
-	<url>https://jitpack.io/#jitpack/burp-api-common/0.1</url>
-
 	<dependencies>
 		<!-- Burp API -->
+		<!-- https://mvnrepository.com/artifact/net.portswigger.burp.extender/burp-extender-api -->
 		<dependency>
 			<groupId>net.portswigger.burp.extender</groupId>
 			<artifactId>burp-extender-api</artifactId>
-			<version>1.7.22</version>
-			<scope>provided</scope>
+			<version>2.1</version>
 		</dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
