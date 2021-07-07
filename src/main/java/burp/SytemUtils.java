@@ -129,40 +129,6 @@ public class SytemUtils {
 		}
 		return result;
 	}
-
-	public static void openPoCFile(String filepath) {
-		// /Applications/Visual Studio Code.app/Contents/MacOS/Electron
-		if (isInEnvironmentPath("code.cmd")) {//windows下的vscode
-			try {
-				String[] cmdArray = new String[] {"code.cmd","\""+filepath+"\""};
-				Runtime.getRuntime().exec(cmdArray);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}else if (isInEnvironmentPath("idle.bat")){
-			try {
-				String[] cmdArray = new String[] {"idle.bat","\""+filepath+"\""};
-				Runtime.getRuntime().exec(cmdArray);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}else {
-			try {
-				String[] cmdArray = new String[] {"/Applications/Visual Studio Code.app/Contents/MacOS/Electron","\""+filepath+"\""};
-				Runtime.getRuntime().exec(cmdArray);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			try {
-				//JOptionPane.showMessageDialog(null,"Not found editor(code.exe idle.bat) in environment.");
-				File file = new File(filepath);
-				OpenFolder(file.getParent());
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
 	
 	/*
 	 * parserPath --- python.exe java.exe ....
@@ -345,6 +311,29 @@ public class SytemUtils {
 			e.printStackTrace();
 		}
 		return buffer;
+	}
+	
+	public static void editWithVSCode(String filepath) {
+		// /Applications/Visual Studio Code.app/Contents/MacOS/Electron
+		if (filepath.contains(" ")){
+			filepath = "\""+filepath+"\"";
+		}
+		if (isMac()) {
+			try {
+				String[] cmdArray = new String[] {"/Applications/Visual Studio Code.app/Contents/MacOS/Electron",filepath};
+				Runtime.getRuntime().exec(cmdArray);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		if (isWindows()) {
+			try {
+				String[] cmdArray = new String[] {"code.cmd",filepath};
+				Runtime.getRuntime().exec(cmdArray);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 
