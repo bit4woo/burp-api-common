@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-/*
+/**
  * source code: https://github.com/bit4woo/burp-api-common/blob/master/src/main/java/burp/HelperPlus.java
  * author: bit4woo
  * github: https://github.com/bit4woo
@@ -52,7 +52,7 @@ public class HelperPlus{
 	public HelperPlus(IExtensionHelpers helpers) {
 		HelperPlus.helpers = helpers;
 	}
-	/*
+	/**
 	 * 返回HTTP请求或响应的整个header头部分，与body相对应
 	 */
 	public String getHeadersAsStr(boolean isRequest,byte[] requestOrResponse) {
@@ -71,7 +71,7 @@ public class HelperPlus{
 		return new String(byte_header);
 	}
 
-	/*
+	/**
 	 * 返回HTTP请求或响应的整个header头部分，与body相对应
 	 */
 	public String getHeadersAsStr(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
@@ -87,7 +87,7 @@ public class HelperPlus{
 		return getHeadersAsStr(messageIsRequest, requestOrResponse);
 	}
 
-	/*
+	/**
 	 * 获取header的字符串数组，是构造burp中请求需要的格式。
 	 * return headers list
 	 */
@@ -104,7 +104,7 @@ public class HelperPlus{
 		return getHeaderList(messageIsRequest,requestOrResponse);
 	}
 
-	/*
+	/**
 	 * 获取请求包或者响应包中的header List
 	 */
 	public List<String> getHeaderList(boolean IsRequest,byte[] requestOrResponse) {
@@ -122,6 +122,9 @@ public class HelperPlus{
 		}
 	}
 
+	/**
+	 * 新增或更新header
+	 */
 	public static List<String> addOrUpdateHeader(List<String> headers,String headerName,String headerValue) {
 		for (String header:headers) {
 			if (header.contains(":")) {
@@ -142,7 +145,9 @@ public class HelperPlus{
 		return headers;
 	}
 	
-	
+	/**
+	 * 新增或更新header
+	 */
 	public IHttpRequestResponse addOrUpdateHeader(boolean messageIsRequest,IHttpRequestResponse messageInfo,String headerName,String headerValue){
 		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
 		byte[] body = getBody(messageIsRequest,messageInfo);
@@ -156,6 +161,9 @@ public class HelperPlus{
 		return messageInfo;
 	}
 	
+	/**
+	 * 新增或更新header
+	 */
 	public byte[] addOrUpdateHeader(boolean isRequest,byte[] requestOrResponse,String headerName,String headerValue){
 		List<String> headers = getHeaderList(isRequest,requestOrResponse);
 		byte[] body = getBody(isRequest,requestOrResponse);
@@ -163,6 +171,9 @@ public class HelperPlus{
 		return helpers.buildHttpMessage(headers, body);
 	}
 
+	/**
+	 * 删除header
+	 */
 	public static List<String> removeHeader(List<String> headers,String headerNameOrHeaderLine) {
 		Iterator<String> it = headers.iterator();
 		while(it.hasNext()) {
@@ -176,6 +187,9 @@ public class HelperPlus{
 		return headers;
 	}
 	
+	/**
+	 * 删除header
+	 */
 	public IHttpRequestResponse removeHeader(boolean messageIsRequest,IHttpRequestResponse messageInfo,String headerNameOrHeaderLine){
 		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
 		byte[] body = getBody(messageIsRequest,messageInfo);
@@ -189,7 +203,7 @@ public class HelperPlus{
 		return messageInfo;
 	}
 	
-	/*
+	/**
 	 * 删除特定的header。
 	 */
 	public byte[] removeHeader(boolean isRequest,byte[] requestOrResponse, String headerNameOrHeaderLine) {
@@ -200,7 +214,7 @@ public class HelperPlus{
 	}
 	
 
-	/*
+	/**
 	 * 获取某个header的整行，如果没有此header，返回null，以header的名称作为查找依据。
 	 */
 	public static String getHeaderLine(List<String> headers,String headerName) {
@@ -220,7 +234,7 @@ public class HelperPlus{
 		return null;
 	}
 	
-	/*
+	/**
 	 * 获取某个header的整行，如果没有此header，返回null，以header的名称作为查找依据。
 	 */
 	public String getHeaderLine(boolean messageIsRequest,IHttpRequestResponse messageInfo, String headerName) {
@@ -228,7 +242,7 @@ public class HelperPlus{
 		return getHeaderLine(headers,headerName);
 	}
 
-	/*
+	/**
 	 * 获取某个header的整行，如果没有此header，返回null，以header的名称作为查找依据。
 	 */
 	public String getHeaderLine(boolean messageIsRequest,byte[] requestOrResponse, String headerName) {
@@ -236,7 +250,7 @@ public class HelperPlus{
 		return getHeaderLine(headers,headerName);
 	}
 
-	/*
+	/**
 	 * 获取某个header的值，如果没有此header，返回null。
 	 */
 	public static String getHeaderValueOf(List<String> headers,String headerName) {
@@ -257,7 +271,7 @@ public class HelperPlus{
 		return null;
 	}
 
-	/*
+	/**
 	 * 获取某个header的值，如果没有此header，返回null。
 	 */
 	public String getHeaderValueOf(boolean messageIsRequest,IHttpRequestResponse messageInfo, String headerName) {
@@ -265,7 +279,7 @@ public class HelperPlus{
 		return getHeaderValueOf(headers,headerName);
 	}
 
-	/*
+	/**
 	 * 获取某个header的值，如果没有此header，返回null。
 	 */
 	public String getHeaderValueOf(boolean messageIsRequest,byte[] requestOrResponse, String headerName) {
@@ -273,7 +287,9 @@ public class HelperPlus{
 		return getHeaderValueOf(headers,headerName);
 	}
 
-
+	/**
+	 * 获取数据包的body
+	 */
 	public static byte[] getBody(boolean isRequest,byte[] requestOrResponse) {
 		if (requestOrResponse == null){
 			return null;
@@ -291,6 +307,9 @@ public class HelperPlus{
 		return byte_body;
 	}
 
+	/**
+	 * 获取数据包的body
+	 */
 	public static byte[] getBody(boolean messageIsRequest,IHttpRequestResponse messageInfo) {
 		if (messageInfo == null){
 			return null;
@@ -304,6 +323,9 @@ public class HelperPlus{
 		return getBody(messageIsRequest, requestOrResponse);
 	}
 	
+	/**
+	 * 更新数据包的body
+	 */
 	public IHttpRequestResponse UpdateBody(boolean messageIsRequest,IHttpRequestResponse messageInfo,byte[] body){
 		List<String> headers = getHeaderList(messageIsRequest,messageInfo);
 		byte[] RequestOrResponse = helpers.buildHttpMessage(headers, body);
@@ -315,12 +337,15 @@ public class HelperPlus{
 		return messageInfo;
 	}
 	
+	/**
+	 * 更新数据包的body
+	 */
 	public byte[] UpdateBody(boolean isRequest,byte[] requestOrResponse,byte[] body){
 		List<String> headers = getHeaderList(isRequest,requestOrResponse);
 		return helpers.buildHttpMessage(headers, body);
 	}
 
-	/*
+	/**
 	 * return Type is URL,not String.
 	 * use equal() function to compare URL object. 
 	 * the string contains default port or not both OK, but the path(/) is sensitive
@@ -328,9 +353,34 @@ public class HelperPlus{
 	 * 
 	 * result example:
 	 *  
-	 * eg. http://bit4woo.com:80/ 包含默认端口和默认path(/)
+	 * eg. http://bit4woo.com/ 不包含默认端口；包含默认path(/)
+	 * 是符合通常浏览器中使用格式的
 	 */
 	public static URL getShortURL(IHttpRequestResponse messageInfo){
+		if (null == messageInfo) return null;
+		String shortUrlString = messageInfo.getHttpService().toString();//http://www.baidu.com
+		shortUrlString = shortUrlString+"/";
+		try {
+			return new URL(shortUrlString);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * return Type is URL,not String.
+	 * use equal() function to compare URL object. 
+	 * the string contains default port or not both OK, but the path(/) is sensitive
+	 * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。但最后的斜杠path却是有关系的。
+	 * 
+	 * result example:
+	 *  
+	 * eg. http://bit4woo.com:80/ 包含默认端口和默认path(/) 
+	 * @param messageInfo
+	 * @return
+	 */
+	public static URL getShortURLWithDefaultPort(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
 		String shortUrlString = messageInfo.getHttpService().toString();//http://www.baidu.com
 		shortUrlString = formateURLString(shortUrlString);
@@ -341,8 +391,31 @@ public class HelperPlus{
 			return null;
 		}
 	}
+	
+	
+	/**
+	 * return Type is URL,not String.
+	 * use equal() function to compare URL object. the string contains default port or not both OK, but the path(/) is sensitive
+	 * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。但最后的斜杠path却是有关系的。
+	 * 
+	 * 不包含默认端口的URL格式，符合通常浏览器中的格式
+	 * http://bit4woo.com/test.html#123
+	 */
+	public final URL getFullURL(IHttpRequestResponse messageInfo){
+		if (null == messageInfo) return null;
+		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
+		String tmpurl =  analyzeRequest.getUrl().toString();
+		tmpurl = removeDefaultPort(tmpurl);
+		try {
+			URL url = new URL(tmpurl);
+			return url;
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
-	/*
+	/**
 	 * return Type is URL,not String.
 	 * use equal() function to compare URL object. the string contains default port or not both OK, but the path(/) is sensitive
 	 * URL对象可以用它自己提供的equal()函数进行对比，是否包含默认端口都是没有关系的。但最后的斜杠path却是有关系的。
@@ -350,14 +423,14 @@ public class HelperPlus{
 	 * 这个函数的返回结果转换成字符串是包含了默认端口的。
 	 * http://bit4woo.com:80/test.html#123
 	 */
-	public final URL getFullURL(IHttpRequestResponse messageInfo){
+	public final URL getFullURLWithDefaultPort(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
 		return analyzeRequest.getUrl();
 	}
 
 
-	/*
+	/**
 	 * to let url String contains default port(80\443) and default path(/)
 	 * 
 	 * from: http://bit4woo.com
@@ -373,16 +446,49 @@ public class HelperPlus{
 
 			if (port == -1) {
 				String newHost = url.getHost()+":"+url.getDefaultPort();
-				urlString = urlString.replace(host, newHost);
+				urlString = urlString.replaceFirst(host, newHost);
 			}
 
 			if (path.equals("")) {
 				urlString = urlString+"/";
 			}
+			return new URL(urlString).toString();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
+			return null;
 		}
-		return urlString;
+	}
+	
+	/**
+	 * remove default port(80\443) from the url
+	 * 这个格式和我们平常浏览器中看到的格式才是一致的，符合使用习惯
+	 * 
+	 * from: http://bit4woo.com:80/
+	 * to  : http://bit4woo.com/
+	 */
+	public static String removeDefaultPort(String urlString) {
+		try {
+			//urlString = "https://www.runoob.com";
+			URL url = new URL(urlString);
+			String protocol = url.getProtocol();
+			String host = url.getHost();
+			int port = url.getPort();
+			String path = url.getPath();
+
+			if ((port == 80 && protocol.equalsIgnoreCase("http"))
+					|| (port == 443 && protocol.equalsIgnoreCase("https"))) {
+				String oldHost = url.getHost()+":"+url.getPort();
+				urlString = urlString.replaceFirst(oldHost, host);
+			}
+			
+			if (path.equals("")) {
+				urlString = urlString+"/";
+			}
+			return new URL(urlString).toString();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public static String getHost(IHttpRequestResponse messageInfo) {
@@ -418,9 +524,6 @@ public class HelperPlus{
 	}
 	
 	
-	
-
-	
 
 	public List<IParameter> getParameters(IHttpRequestResponse messageInfo){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
@@ -433,7 +536,7 @@ public class HelperPlus{
 	}
 	
 
-	/*
+	/**
 	 * 使用burp.IExtensionHelpers.getRequestParameter(byte[], String),未考虑同名参数的情况！
 	 */
 	public IParameter getParameterByKey(IHttpRequestResponse messageInfo,String key){
@@ -445,7 +548,7 @@ public class HelperPlus{
 	}
 	
 	
-	/*
+	/**
 	 * 根据参数的key查找IParameter对象，考虑了同名函数的情况，但这种情况很少，几乎用不上。
 	 * 尽量不要使用这个函数
 	 */
@@ -460,7 +563,7 @@ public class HelperPlus{
 		return result;
 	}
 	
-	/*
+	/**
 	 * 根据参数的key和type查找IParameter对象
 	 * 考虑了同名函数的情况，但这种情况很少，几乎用不上
 	 * 尽量不要使用这个函数
@@ -476,7 +579,7 @@ public class HelperPlus{
 		return result;
 	}
 	
-	/*
+	/**
 	 *  考虑了同名函数的情况，但这种情况很少，几乎用不上
 	 *  尽量不要使用这个函数
 	 */
@@ -487,7 +590,7 @@ public class HelperPlus{
 		return findParametersByKeyAndType(paras,key,type);
 	}
 
-	/*
+	/**
 	 *  考虑了同名函数的情况，但这种情况很少，几乎用不上
 	 *  尽量不要使用这个函数
 	 */
