@@ -436,7 +436,19 @@ public class HelperPlus{
 	 * from: http://bit4woo.com
 	 * to  : http://bit4woo.com:80/
 	 */
+	@Deprecated
 	public static String formateURLString(String urlString) {
+		return addDefaultPort(urlString);
+	}
+	
+	/**
+	 * 对URL添加默认端口。
+	 * burp中获取到的URL是包含默认端口的，但是平常浏览器中的URL格式都是不包含默认端口的。
+	 * 应该尽量和平常使用习惯保存一致！所以尽量避免使用该函数。
+	 * @param urlString
+	 * @return
+	 */
+	public static String addDefaultPort(String urlString) {
 		try {
 			//urlString = "https://www.runoob.com";
 			URL url = new URL(urlString);
@@ -472,7 +484,7 @@ public class HelperPlus{
 			URL url = new URL(urlString);
 			String protocol = url.getProtocol();
 			String host = url.getHost();
-			int port = url.getPort();
+			int port = url.getPort();//不包含端口时返回-1
 			String path = url.getPath();
 
 			if ((port == 80 && protocol.equalsIgnoreCase("http"))
@@ -658,7 +670,7 @@ public class HelperPlus{
 		return parts[1];
 	}
 
-	public static void main(String args[]) {
+	private static void test1() {
 		List<String> headerList = new ArrayList<String>();
 		headerList.add("User-Agent: sssss");
 		headerList.add("Use: sssss");
@@ -668,5 +680,14 @@ public class HelperPlus{
 		System.out.println(newHeader.toString());
 		newHeader = addOrUpdateHeader(headerList,"Use1","xxxx");
 		System.out.println(newHeader.toString());
+	}
+	private static void test2() {
+		String url = "http://www.baidu.com";
+		String url2 = "https://www.baidu.com:443";
+		System.out.println(addDefaultPort(url));
+		System.out.println(removeDefaultPort(url2));
+	}
+	public static void main(String args[]) {
+		test2();
 	}
 }
