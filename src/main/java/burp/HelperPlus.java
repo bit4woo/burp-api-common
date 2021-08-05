@@ -686,6 +686,8 @@ public class HelperPlus{
 		String url2 = "https://www.baidu.com:443";
 		System.out.println(addDefaultPort(url));
 		System.out.println(removeDefaultPort(url2));
+		System.out.println(removeDefaultPort(url));
+		System.out.println(addDefaultPort(url));
 	}
 	public static void main(String args[]) {
 		test2();
