@@ -467,7 +467,7 @@ public class HelperPlus{
 			return new URL(urlString).toString();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-			return null;
+			return urlString;
 		}
 	}
 	
@@ -499,7 +499,7 @@ public class HelperPlus{
 			return new URL(urlString).toString();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-			return null;
+			return urlString;
 		}
 	}
 
