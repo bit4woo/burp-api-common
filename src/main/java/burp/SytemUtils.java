@@ -11,8 +11,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -84,6 +87,15 @@ public class SytemUtils {
 		String os = System.getProperty("os.name").toLowerCase();
 		return (os.indexOf( "nix") >=0 || os.indexOf( "nux") >=0);
 	}
+	
+	/**
+	 * 获取系统默认编码
+	 * //https://javarevisited.blogspot.com/2012/01/get-set-default-character-encoding.html
+	 * @return
+	 */
+	private static String getSystemCharSet() {
+		return Charset.defaultCharset().toString();
+	}
 
 	/**
 	 * 将文本写入系统剪切板
@@ -97,10 +109,14 @@ public class SytemUtils {
 
 
 	
-	/*
+	/**
+	 * 
+	 * 拼接命令行中的命令
+	 * 
 	 * parserPath --- python.exe java.exe ....
 	 * executerPath --- sqlmap.py nmap.exe ....
 	 * parameters ---- -v -A -r xxx.file .....
+	 * 
 	 */
 	public static String genCmd(String parserPath,String executerPath, String parameter) {
 		StringBuilder command = new StringBuilder();
@@ -113,8 +129,7 @@ public class SytemUtils {
 			command.append(" ");
 		}
 
-		if ((executerPath != null && new File(executerPath).exists() && new File(executerPath).isFile())
-				|| isInEnvironmentPath(executerPath)){
+		if (executerPath != null){
 
 			if (executerPath.contains(" ")) {
 				executerPath = "\""+executerPath+"\"";//如果路径中包含空格，需要引号
@@ -129,6 +144,77 @@ public class SytemUtils {
 		}
 		command.append(System.lineSeparator());
 		return command.toString();
+	}
+	
+
+
+	/**
+	 * 通知执行bat文件来执行命令
+	 */
+	public static Process runBatchFile(String batfilepath) {
+		String command = "";
+		if (isWindows()) {
+			command="cmd /c start " + batfilepath;
+		} else {
+			if (new File("/bin/sh").exists()) {
+				command="/bin/sh " + batfilepath;
+			}
+			else if (new File("/bin/bash").exists()) {
+				command="/bin/bash " + batfilepath;
+			}
+		}
+		try {
+			Process process = Runtime.getRuntime().exec(command);
+			process.waitFor();//等待执行完成
+			return process;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public static String genBatchFile(String cmdContent, String batchFileName) {
+		try {
+			//将命令写入剪切板
+			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			StringSelection selection = new StringSelection(cmdContent);
+			clipboard.setContents(selection, null);
+
+			if (batchFileName == null || batchFileName.trim().equals("")) {
+				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMdd-HHmmss");
+				String timeString = simpleDateFormat.format(new Date());
+				batchFileName = timeString+".bat";
+			}else if(!batchFileName.endsWith(".bat") && !batchFileName.endsWith(".cmd")) {
+				batchFileName = batchFileName+".bat";
+			}
+			String workdir = System.getProperty("user.home");
+			File batFile = new File(workdir,batchFileName);
+			if (!batFile.exists()) {
+				batFile.createNewFile();
+			}
+			if (isMac()){
+				cmdContent = String.format("osascript -e 'tell app \"Terminal\" to do script \"%s\"'",cmdContent);
+			}
+			byte2File(cmdContent.getBytes(),batFile);
+			return batFile.getAbsolutePath();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/*
+	 * 切换工作目录
+	 */
+	public static String changeDirCommand(String dir){
+		//运行命令的工作目录，work path
+		String command = "cd "+dir+System.lineSeparator();
+
+		if (isWindows()) {//如果是windows，还要注意不同磁盘的切换
+			String diskString = dir.split(":")[0];
+			command =command+ diskString+":"+System.lineSeparator();
+		}
+		return command;
 	}
 
 	/**
@@ -163,6 +249,40 @@ public class SytemUtils {
 		}
 		return false;
 	}
+	
+	/**
+	 * 检测某个命令是否存在，根据which where命令来的，如果不在环境变量中应该读取不到！
+	 */
+	public static String isCommandExists(String cmd) {
+        if (isWindows()) {
+			cmd = "where "+cmd;
+        }else {
+			cmd = "which "+cmd;
+        }
+        try {
+            //启动进程
+			Process process = Runtime.getRuntime().exec(cmd);
+            //获取输入流
+            InputStream inputStream = process.getInputStream();
+            //转成字符输入流
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, getSystemCharSet());
+            int len = -1;
+            char[] c = new char[1024];
+            StringBuffer outputString = new StringBuffer();
+            //读取进程输入流中的内容
+            while ((len = inputStreamReader.read(c)) != -1) {
+                String s = new String(c, 0, len);
+                outputString.append(s);
+                //System.out.print(s);
+            }
+            inputStream.close();
+            return outputString.toString();
+        } 
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
 
 
 	public static void OpenFolder(String path) throws IOException {
@@ -183,19 +303,13 @@ public class SytemUtils {
 		Runtime.getRuntime().exec(cmdArray);
 	}
 	
-	public static void byte2File(byte[] buf, String filePath, String fileName)
+	public static void byte2File(byte[] buf, File file)
 	{
 		BufferedOutputStream bos = null;
 		FileOutputStream fos = null;
-		File file = null;
 		try
 		{
-			File dir = new File(filePath);
-			if (!dir.exists() && dir.isDirectory())
-			{
-				dir.mkdirs();
-			}
-			file = new File(filePath + File.separator + fileName);
+			file.createNewFile();
 			fos = new FileOutputStream(file);
 			bos = new BufferedOutputStream(fos);
 			bos.write(buf);

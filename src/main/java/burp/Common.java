@@ -425,6 +425,32 @@ public class Common {
 			return new StringBuffer(str).reverse().toString();
 		}
 	    
+		/**
+		 * 拼接多个byte[]数组的方法
+		 * @param arrays
+		 * @return
+		 */
+		public static byte[] join(byte[]... arrays)
+		{
+			int len = 0;
+			for (byte[] arr : arrays)
+			{
+				len += arr.length;//计算多个数组的长度总和
+			}
+
+			byte[] result = new byte[len];
+			int idx = 0;
+
+			for (byte[] arr : arrays)
+			{
+				for (byte b : arr)
+				{
+					result[idx++] = b;
+				}
+			}
+
+			return result;
+		}
 	    public static void main(String[] args) {
 	        // test IPv4
 	        String ipv4Address = "127.56.87.4";
