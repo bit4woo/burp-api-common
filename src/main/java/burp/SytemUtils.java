@@ -299,7 +299,7 @@ public class SytemUtils {
                 //System.out.print(s);
             }
             inputStream.close();
-            return outputString.toString();
+            return outputString.toString().trim();//去除换行符
         } 
         catch (IOException e) {
             e.printStackTrace();
@@ -422,6 +422,7 @@ public class SytemUtils {
 	
 
 	public static void main(String args[]) {
+		System.out.println(isCommandExists("python"));
 	}
 }
 
