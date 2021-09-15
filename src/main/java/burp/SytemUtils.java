@@ -202,6 +202,29 @@ public class SytemUtils {
 			return null;
 		}
 	}
+	
+	public static void startCmdConsole() {
+		try {
+			Process process = null;
+			if (isWindows()) {
+				process = Runtime.getRuntime().exec("cmd /c start cmd.exe");
+			} else if (isMac()){
+				///System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal
+				process = Runtime.getRuntime().exec("open -n -F -a /System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal");
+			}else if (isUnix()) {
+				process = Runtime.getRuntime().exec("/usr/bin/gnome-terminal");//kali和Ubuntu测试通过
+				//				if(new File("/usr/bin/gnome-terminal").exists()) {
+				//					process = Runtime.getRuntime().exec("/usr/bin/gnome-terminal");
+				//				}else {
+				//					process = Runtime.getRuntime().exec("/usr/bin/xterm");//只能使用shift+insert 进行粘贴操作，但是修改剪切板并不能修改它粘贴的内容。
+				//貌似和使用了openjdk有关，故暂时只支持gnome-terminal. 
+				//				}
+			}
+			process.waitFor();//等待执行完成
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 	/*
 	 * 切换工作目录
