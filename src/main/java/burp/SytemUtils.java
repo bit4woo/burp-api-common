@@ -1,6 +1,5 @@
 package burp;
 
-import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -15,50 +14,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
-
-/*
+/**
  * 常用操作系统操作：打开浏览器、打开文件夹、操作剪切板等
  * 
  */
 public class SytemUtils {
-
-	public static String set2string(Set<?> set){
-		Iterator iter = set.iterator();
-		StringBuilder result = new StringBuilder();
-		while(iter.hasNext())
-		{
-			//System.out.println(iter.next());  		
-			result.append(iter.next()).append("\n");
-		}
-		return result.toString();
-	}
-
-	public static boolean uselessExtension(String urlpath) {
-		Set<String> extendset = new HashSet<String>();
-		extendset.add(".gif");
-		extendset.add(".jpg");
-		extendset.add(".png");
-		extendset.add(".css");//gif,jpg,png,css,woff
-		extendset.add(".woff");
-		Iterator<String> iter = extendset.iterator();
-		while (iter.hasNext()) {
-			if(urlpath.endsWith(iter.next().toString())) {//if no next(), this loop will not break out
-				return true;
-			}
-		}
-		return false;
-	}
 
 	public static String getNowTimeString() {
 		SimpleDateFormat simpleDateFormat = 
@@ -90,45 +54,48 @@ public class SytemUtils {
 		}
 	}
 
-	public static List<Integer> Port_prompt(Component prompt, String str){
-		String defaultPorts = "8080,8000,8443";
-		String user_input = JOptionPane.showInputDialog(prompt, str,defaultPorts);
-		if (null == user_input || user_input.trim().equals("")) return  null; 
-		List<Integer> portList = new ArrayList<Integer>();
-		for (String port: user_input.trim().split(",")) {
-			int portint = Integer.parseInt(port);
-			portList.add(portint);
-		}
-		return portList;
-	}
-
 	public static boolean isWindows() {
-		String OS_NAME = System.getProperties().getProperty("os.name").toLowerCase();
+		String OS_NAME = System.getProperty("os.name").toLowerCase();
 		if (OS_NAME.contains("windows")) {
 			return true;
 		} else {
 			return false;
 		}
 	}
+	
+	public static boolean isWindows10() {
+		String OS_NAME = System.getProperty("os.name").toLowerCase();
+		if (OS_NAME.equalsIgnoreCase("windows 10")) {
+			return true;
+		}
+		return false;
+	}
 
+	public static boolean isMac(){
+		String os = System.getProperty("os.name").toLowerCase();
+		return (os.indexOf( "mac" ) >= 0); 
+	}
+
+	/**
+	 * //linux or unix
+	 * @return
+	 */
+	public static boolean isUnix(){
+		String os = System.getProperty("os.name").toLowerCase();
+		return (os.indexOf( "nix") >=0 || os.indexOf( "nux") >=0);
+	}
+
+	/**
+	 * 将文本写入系统剪切板
+	 * @param text
+	 */
 	public static void writeToClipboard(String text) {
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		StringSelection selection = new StringSelection(text);
 		clipboard.setContents(selection, null);
 	}
 
-	public static List<String> getLinesFromTextArea(JTextArea textarea){
-		//user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
-		String[] lines = textarea.getText().replaceAll("\r\n", "\n").split("\n");
-		List<String> result = new ArrayList<String>();
-		for(String line: lines) {
-			line = line.trim();
-			if (line!="") {
-				result.add(line.trim());
-			}
-		}
-		return result;
-	}
+
 	
 	/*
 	 * parserPath --- python.exe java.exe ....
@@ -164,9 +131,10 @@ public class SytemUtils {
 		return command.toString();
 	}
 
-	/*
+	/**
 	 * 判断某个文件是否在环境变量中
 	 */
+	@Deprecated
 	public static boolean isInEnvironmentPath(String filename) {
 		if (filename == null) {
 			return false;
@@ -194,27 +162,6 @@ public class SytemUtils {
 			}
 		}
 		return false;
-	}
-
-
-	public static boolean isWindows10() {
-		String OS_NAME = System.getProperties().getProperty("os.name").toLowerCase();
-		if (OS_NAME.equalsIgnoreCase("windows 10")) {
-			return true;
-		}
-		return false;
-	}
-
-	public static boolean isMac(){
-		String os = System.getProperty("os.name").toLowerCase();
-		//Mac
-		return (os.indexOf( "mac" ) >= 0); 
-	}
-
-	public static boolean isUnix(){
-		String os = System.getProperty("os.name").toLowerCase();
-		//linux or unix
-		return (os.indexOf( "nix") >=0 || os.indexOf( "nux") >=0);
 	}
 
 
@@ -338,7 +285,6 @@ public class SytemUtils {
 	
 
 	public static void main(String args[]) {
-		openPoCFile("D:\\github\\POC-T\\script\\activemq-upload.py");
 	}
 }
 

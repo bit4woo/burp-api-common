@@ -15,10 +15,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JTextArea;
-
-import Tools.PatternsFromAndroid;
-
 /**
  * 常用格式校验
  * 各种按照正则进行提取
@@ -26,6 +22,24 @@ import Tools.PatternsFromAndroid;
  * 类型转换
  */
 public class Common {
+	
+	public static final String URL_Regex = "(?:\"|')"
+			+ "("
+			+ "((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})"
+			+ "|"
+			+ "((?:/|\\.\\./|\\./)[^\"'><,;| *()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})"
+			+ "|"
+			+ "([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/][^\"|']{0,}|))"
+			+ "|"
+			+ "([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|))"
+			+ ")"
+			+ "(?:\"|')";
+	
+    private static final String IP_ADDRESS_STRING =
+            "((25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9])\\.(25[0-5]|2[0-4]"
+            + "[0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1]"
+            + "[0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}"
+            + "|[1-9][0-9]|[0-9]))";
 	
 	//域名校验和域名提取还是要区分对待
 		//domain.DomainProducer.grepDomain(String)是提取域名的，正则中包含了*号
@@ -151,46 +165,16 @@ public class Common {
 
 			String[] lines = httpResponse.split("\r\n");
 
-			//https://github.com/GerbenJavado/LinkFinder/blob/master/linkfinder.py
-			String regex_str = "(?:\"|')"
-					+ "("
-					+ "((?:[a-zA-Z]{1,10}://|//)[^\"'/]{1,}\\.[a-zA-Z]{2,}[^\"']{0,})"
-					+ "|"
-					+ "((?:/|\\.\\./|\\./)[^\"'><,;| *()(%%$^/\\\\\\[\\]][^\"'><,;|()]{1,})"
-					+ "|"
-					+ "([a-zA-Z0-9_\\-/]{1,}/[a-zA-Z0-9_\\-/]{1,}\\.(?:[a-zA-Z]{1,4}|action)(?:[\\?|/][^\"|']{0,}|))"
-					+ "|"
-					+ "([a-zA-Z0-9_\\-]{1,}\\.(?:php|asp|aspx|jsp|json|action|html|js|txt|xml)(?:\\?[^\"|']{0,}|))"
-					+ ")"
-					+ "(?:\"|')";
-
-			//regex_str = Pattern.quote(regex_str);
-			Pattern pt = Pattern.compile(regex_str);
+			Pattern pt = Pattern.compile(URL_Regex);
 			for (String line:lines) {//分行进行提取，似乎可以提高成功率？PATH_AND_QUERY
+				Matcher matcher = pt.matcher(line);
 				while (matcher.find()) {//多次查找
 					String url = matcher.group();
 					URLs.add(url);
 				}
 			}
 
-			//这部分提取的是含有协议头的完整URL地址
-			for (String line:lines) {
-				Matcher matcher = PatternsFromAndroid.WEB_URL.matcher(line);
-				while (matcher.find()) {//多次查找
-					String url = matcher.group();
-					//即使是www.www也会被认为是URL（应该是被认作了主机名或文件名），所以必须过滤
-					if (url.toLowerCase().startsWith("http://")
-							||url.toLowerCase().startsWith("https://")
-							||url.toLowerCase().startsWith("rtsp://")
-							||url.toLowerCase().startsWith("ftp://")){
-						URLs.add(url);
-					}
-				}
-			}
-
 			List<String> tmplist= new ArrayList<>(URLs);
-			Collections.sort(tmplist);
-			tmplist = removePrefixAndSuffix(tmplist,"\"","\"");
 			return tmplist;
 		}
 
@@ -198,8 +182,9 @@ public class Common {
 			Set<String> IPSet = new HashSet<>();
 			String[] lines = httpResponse.split("\r\n");
 
+			Pattern pt = Pattern.compile(IP_ADDRESS_STRING);
 			for (String line:lines) {
-				Matcher matcher = PatternsFromAndroid.IP_ADDRESS.matcher(line);
+				Matcher matcher = pt.matcher(line);
 				while (matcher.find()) {//多次查找
 					String tmpIP = matcher.group();
 					IPSet.add(tmpIP);
@@ -378,7 +363,12 @@ public class Common {
 			return urlString;
 		}
 		
-		public static String getShortUrl(String urlString) {
+		/**
+		 * baseUrl格式：https://www.runoob.com
+		 * @param urlString
+		 * @return
+		 */
+		public static String getBaseUrl(String urlString) {
 			try {
 				//urlString = "https://www.runoob.com";
 				URL url = new URL(urlString);
@@ -389,25 +379,11 @@ public class Common {
 				if (port == -1) {
 					port = url.getDefaultPort();
 				}
-				return procotol+"://"+host+port+"/";
+				return procotol+"://"+host+port;
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 				return urlString;
 			}
-		}
-		
-
-		public static List<String> getLinesFromTextArea(JTextArea textarea){
-			//user input maybe use "\n" in windows, so the System.lineSeparator() not always works fine!
-			String[] lines = textarea.getText().replaceAll("\r\n", "\n").split("\n");
-			List<String> result = new ArrayList<String>();
-			for(String line: lines) {
-				line = line.trim();
-				if (line!="") {
-					result.add(line.trim());
-				}
-			}
-			return result;
 		}
 		
 
