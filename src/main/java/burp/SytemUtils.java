@@ -65,7 +65,7 @@ public class SytemUtils {
 			return false;
 		}
 	}
-	
+
 	public static boolean isWindows10() {
 		String OS_NAME = System.getProperty("os.name").toLowerCase();
 		if (OS_NAME.equalsIgnoreCase("windows 10")) {
@@ -87,7 +87,7 @@ public class SytemUtils {
 		String os = System.getProperty("os.name").toLowerCase();
 		return (os.indexOf( "nix") >=0 || os.indexOf( "nux") >=0);
 	}
-	
+
 	/**
 	 * 获取系统默认编码
 	 * //https://javarevisited.blogspot.com/2012/01/get-set-default-character-encoding.html
@@ -108,7 +108,7 @@ public class SytemUtils {
 	}
 
 
-	
+
 	/**
 	 * 
 	 * 拼接命令行中的命令
@@ -145,7 +145,7 @@ public class SytemUtils {
 		command.append(System.lineSeparator());
 		return command.toString();
 	}
-	
+
 
 
 	/**
@@ -202,7 +202,7 @@ public class SytemUtils {
 			return null;
 		}
 	}
-	
+
 	public static void startCmdConsole() {
 		try {
 			Process process = null;
@@ -272,40 +272,40 @@ public class SytemUtils {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * 检测某个命令是否存在，根据which where命令来的，如果不在环境变量中应该读取不到！
 	 */
 	public static String isCommandExists(String cmd) {
-        if (isWindows()) {
+		if (isWindows()) {
 			cmd = "where "+cmd;
-        }else {
+		}else {
 			cmd = "which "+cmd;
-        }
-        try {
-            //启动进程
+		}
+		try {
+			//启动进程
 			Process process = Runtime.getRuntime().exec(cmd);
-            //获取输入流
-            InputStream inputStream = process.getInputStream();
-            //转成字符输入流
-            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, getSystemCharSet());
-            int len = -1;
-            char[] c = new char[1024];
-            StringBuffer outputString = new StringBuffer();
-            //读取进程输入流中的内容
-            while ((len = inputStreamReader.read(c)) != -1) {
-                String s = new String(c, 0, len);
-                outputString.append(s);
-                //System.out.print(s);
-            }
-            inputStream.close();
-            return outputString.toString().trim();//去除换行符
-        } 
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
+			//获取输入流
+			InputStream inputStream = process.getInputStream();
+			//转成字符输入流
+			InputStreamReader inputStreamReader = new InputStreamReader(inputStream, getSystemCharSet());
+			int len = -1;
+			char[] c = new char[1024];
+			StringBuffer outputString = new StringBuffer();
+			//读取进程输入流中的内容
+			while ((len = inputStreamReader.read(c)) != -1) {
+				String s = new String(c, 0, len);
+				outputString.append(s);
+				//System.out.print(s);
+			}
+			inputStream.close();
+			return outputString.toString().trim();//去除换行符
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
 
 
 	public static void OpenFolder(String path) throws IOException {
@@ -325,7 +325,7 @@ public class SytemUtils {
 		String[] cmdArray = new String[] {program,path};
 		Runtime.getRuntime().exec(cmdArray);
 	}
-	
+
 	public static void byte2File(byte[] buf, File file)
 	{
 		BufferedOutputStream bos = null;
@@ -367,7 +367,7 @@ public class SytemUtils {
 			}
 		}
 	}
-	
+
 	public static byte[] File2byte(String filePath)
 	{
 		byte[] buffer = null;
@@ -396,7 +396,7 @@ public class SytemUtils {
 		}
 		return buffer;
 	}
-	
+
 	public static void editWithVSCode(String filepath) {
 		// /Applications/Visual Studio Code.app/Contents/MacOS/Electron
 		if (filepath.contains(" ")){
@@ -419,7 +419,7 @@ public class SytemUtils {
 			}
 		}
 	}
-	
+
 
 	public static void main(String args[]) {
 		System.out.println(isCommandExists("python"));

@@ -145,7 +145,7 @@ public class Getter {
 		}
 		return result;
 	}
-	
+
 	public static boolean isFirstLine(String key,String Value) {
 		//GET /sys/remark/pages.pvt?t=1593481248723&limit=3&start=0&sysId=2111 HTTP/1.1
 		//HTTP/1.1 200 OK
@@ -157,7 +157,7 @@ public class Getter {
 				return true;
 			}
 		}catch(Exception e){}
-		
+
 		return false;
 	}
 
@@ -308,8 +308,8 @@ public class Getter {
 	private final URL getFullURLWithDefaultPort(IHttpRequestResponse messageInfo){
 		return getFullURL(messageInfo);
 	}
-	
-	
+
+
 	/*
 	 * to let url String contains default port(80\443) and default path(/)
 	 * 
@@ -317,18 +317,18 @@ public class Getter {
 	 * to  : http://bit4woo.com:80/
 	 */
 	public static String formateURLString(String urlString) {
-        try {
-        	//urlString = "https://www.runoob.com";
+		try {
+			//urlString = "https://www.runoob.com";
 			URL url = new URL(urlString);
 			String host = url.getHost();
 			int port = url.getPort();
 			String path = url.getPath();
-			
+
 			if (port == -1) {
 				String newHost = url.getHost()+":"+url.getDefaultPort();
 				urlString = urlString.replace(host, newHost);
 			}
-			
+
 			if (path.equals("")) {
 				urlString = urlString+"/";
 			}

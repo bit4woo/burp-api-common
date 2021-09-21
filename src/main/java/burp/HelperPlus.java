@@ -144,7 +144,7 @@ public class HelperPlus{
 		headers.add(headerName+Header_Connector+headerValue);
 		return headers;
 	}
-	
+
 	/**
 	 * 新增或更新header
 	 */
@@ -160,7 +160,7 @@ public class HelperPlus{
 		}
 		return messageInfo;
 	}
-	
+
 	/**
 	 * 新增或更新header
 	 */
@@ -186,7 +186,7 @@ public class HelperPlus{
 		}
 		return headers;
 	}
-	
+
 	/**
 	 * 删除header
 	 */
@@ -202,7 +202,7 @@ public class HelperPlus{
 		}
 		return messageInfo;
 	}
-	
+
 	/**
 	 * 删除特定的header。
 	 */
@@ -212,7 +212,7 @@ public class HelperPlus{
 		headers = removeHeader(headers,headerNameOrHeaderLine);
 		return helpers.buildHttpMessage(headers, body);
 	}
-	
+
 
 	/**
 	 * 获取某个header的整行，如果没有此header，返回null，以header的名称作为查找依据。
@@ -233,7 +233,7 @@ public class HelperPlus{
 		}
 		return null;
 	}
-	
+
 	/**
 	 * 获取某个header的整行，如果没有此header，返回null，以header的名称作为查找依据。
 	 */
@@ -322,7 +322,7 @@ public class HelperPlus{
 		}
 		return getBody(messageIsRequest, requestOrResponse);
 	}
-	
+
 	/**
 	 * 更新数据包的body
 	 */
@@ -336,7 +336,7 @@ public class HelperPlus{
 		}
 		return messageInfo;
 	}
-	
+
 	/**
 	 * 更新数据包的body
 	 */
@@ -367,7 +367,7 @@ public class HelperPlus{
 			return null;
 		}
 	}
-	
+
 	/**
 	 * return Type is URL,not String.
 	 * use equal() function to compare URL object. 
@@ -391,8 +391,8 @@ public class HelperPlus{
 			return null;
 		}
 	}
-	
-	
+
+
 	/**
 	 * return Type is URL,not String.
 	 * use equal() function to compare URL object. the string contains default port or not both OK, but the path(/) is sensitive
@@ -440,7 +440,7 @@ public class HelperPlus{
 	public static String formateURLString(String urlString) {
 		return addDefaultPort(urlString);
 	}
-	
+
 	/**
 	 * 对URL添加默认端口。
 	 * burp中获取到的URL是包含默认端口的，但是平常浏览器中的URL格式都是不包含默认端口的。
@@ -470,7 +470,7 @@ public class HelperPlus{
 			return urlString;
 		}
 	}
-	
+
 	/**
 	 * remove default port(80\443) from the url
 	 * 这个格式和我们平常浏览器中看到的格式才是一致的，符合使用习惯
@@ -492,7 +492,7 @@ public class HelperPlus{
 				String oldHost = url.getHost()+":"+url.getPort();
 				urlString = urlString.replaceFirst(oldHost, host);
 			}
-			
+
 			if (path.equals("")) {
 				urlString = urlString+"/";
 			}
@@ -534,8 +534,8 @@ public class HelperPlus{
 			return -1;
 		}
 	}
-	
-	
+
+
 
 	public List<IParameter> getParameters(IHttpRequestResponse messageInfo){
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(messageInfo);
@@ -546,7 +546,7 @@ public class HelperPlus{
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
 		return analyzeRequest.getParameters();
 	}
-	
+
 
 	/**
 	 * 使用burp.IExtensionHelpers.getRequestParameter(byte[], String),未考虑同名参数的情况！
@@ -558,8 +558,8 @@ public class HelperPlus{
 	public IParameter getParameterByKey(byte[] request,String key){
 		return helpers.getRequestParameter(request, key);
 	}
-	
-	
+
+
 	/**
 	 * 根据参数的key查找IParameter对象，考虑了同名函数的情况，但这种情况很少，几乎用不上。
 	 * 尽量不要使用这个函数
@@ -574,7 +574,7 @@ public class HelperPlus{
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 根据参数的key和type查找IParameter对象
 	 * 考虑了同名函数的情况，但这种情况很少，几乎用不上
@@ -590,7 +590,7 @@ public class HelperPlus{
 		}
 		return result;
 	}
-	
+
 	/**
 	 *  考虑了同名函数的情况，但这种情况很少，几乎用不上
 	 *  尽量不要使用这个函数
@@ -611,15 +611,15 @@ public class HelperPlus{
 		IRequestInfo analyzeRequest = helpers.analyzeRequest(request);
 		return findParametersByKeyAndType(analyzeRequest.getParameters(),key,type);
 	}
-	
-	
+
+
 	public IHttpRequestResponse addOrUpdateParameter(IHttpRequestResponse messageInfo,IParameter para){
 		byte[] request = messageInfo.getRequest();
 		request = addOrUpdateParameter(request, para);
 		messageInfo.setRequest(request);
 		return messageInfo;
 	}
-	
+
 	public byte[] addOrUpdateParameter(byte[] request,IParameter para){
 		IParameter existPara = helpers.getRequestParameter(request, para.getName());
 		if (null != existPara) {
@@ -628,14 +628,14 @@ public class HelperPlus{
 		request = helpers.addParameter(request, para);
 		return request;
 	}
-	
+
 	public IHttpRequestResponse removeParameter(IHttpRequestResponse messageInfo, IParameter parameter) {
 		byte[] request = messageInfo.getRequest();
 		request = helpers.removeParameter(request, parameter);
 		messageInfo.setRequest(request);
 		return messageInfo;
 	}
-	
+
 
 	public String getMethod(IHttpRequestResponse messageInfo){
 		if (messageInfo == null || messageInfo.getRequest() == null) {
