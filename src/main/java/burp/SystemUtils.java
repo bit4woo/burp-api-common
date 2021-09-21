@@ -175,11 +175,6 @@ public class SystemUtils {
 
 	public static String genBatchFile(String cmdContent, String batchFileName) {
 		try {
-			//将命令写入剪切板
-			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-			StringSelection selection = new StringSelection(cmdContent);
-			clipboard.setContents(selection, null);
-
 			if (batchFileName == null || batchFileName.trim().equals("")) {
 				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MMdd-HHmmss");
 				String timeString = simpleDateFormat.format(new Date());
