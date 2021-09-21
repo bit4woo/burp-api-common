@@ -25,7 +25,7 @@ import java.util.Map;
  * 常用操作系统操作：打开浏览器、打开文件夹、操作剪切板等
  * 
  */
-public class SytemUtils {
+public class SystemUtils {
 
 	public static String getNowTimeString() {
 		SimpleDateFormat simpleDateFormat = 
