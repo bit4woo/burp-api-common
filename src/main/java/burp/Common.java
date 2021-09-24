@@ -379,7 +379,7 @@ public class Common {
 			if (port == -1) {
 				port = url.getDefaultPort();
 			}
-			return procotol+"://"+host+port;
+			return procotol+"://"+host+":"+port;
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return urlString;
@@ -451,6 +451,17 @@ public class Common {
 
 		return result;
 	}
+	
+	public static List<Integer> allIndexesOf(String word,String guess) {
+		List<Integer> result = new ArrayList<Integer>();
+		int index = word.indexOf(guess);
+		while (index >= 0) {
+			result.add(index);
+		    index = word.indexOf(guess, index + 1);
+		}
+		return result;
+	}
+	
 	public static void main(String[] args) {
 		// test IPv4
 		String ipv4Address = "127.56.87.4";
