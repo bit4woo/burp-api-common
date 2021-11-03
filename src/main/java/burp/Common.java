@@ -132,7 +132,54 @@ public class Common {
 		}
 		return result;
 	}
+	
+	public static String replaceLast(String string, String toReplace, String replacement) {
+	    int pos = string.lastIndexOf(toReplace);
+	    if (pos > -1) {
+	        return string.substring(0, pos)
+	             + replacement
+	             + string.substring(pos + toReplace.length());
+	    } else {
+	        return string;
+	    }
+	}
+	
+	/**
+	 * byte[]数组截取
+	 * srcPoC 是原数组的起始位置，length是要截取的长度
+	 * 
+	 */
+	public byte[] subByte(byte[] b,int srcPos,int length){
+		byte[] b1 = new byte[length];
+		System.arraycopy(b, srcPos, b1, 0, length);
+		return b1;
+	}
+	
 
+	public static String cleanDomain(String domain) {
+		if (domain == null){
+			return null;
+		}
+		domain = domain.toLowerCase().trim();
+		if (domain.startsWith("http://")|| domain.startsWith("https://")) {
+			try {
+				domain = new URL(domain).getHost();
+			} catch (MalformedURLException e) {
+				return null;
+			}
+		}else {
+			if (domain.contains(":")) {//处理带有端口号的域名
+				domain = domain.substring(0,domain.indexOf(":"));
+			}
+		}
+
+		if (domain.endsWith(".")) {
+			domain = domain.substring(0,domain.length()-1);
+		}
+		
+		return domain;
+	}
+	
 	public static Set<String> grepDomain(String httpResponse) {
 		httpResponse = httpResponse.toLowerCase();
 		//httpResponse = cleanResponse(httpResponse);
@@ -462,7 +509,7 @@ public class Common {
 		return result;
 	}
 	
-	public static void main(String[] args) {
+	public static void test() {
 		// test IPv4
 		String ipv4Address = "127.56.87.4";
 
@@ -476,5 +523,9 @@ public class Common {
 		if (isPrivateIPv6(ipv6Address)) {
 			System.out.println("This is a private IPv6");
 		}
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(URL_Regex);
 	}
 }
