@@ -276,7 +276,7 @@ public class IPAddressUtils {
 				IPList.add(subnet);
 			}
 		}catch(Exception e) {
-			e.printStackTrace(BurpExtender.getStderr());
+			e.printStackTrace();
 		}
 
 		return IPList;
