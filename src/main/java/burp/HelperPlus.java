@@ -295,12 +295,18 @@ public class HelperPlus{
 			return null;
 		}
 		int bodyOffset = -1;
-		if(isRequest) {
-			IRequestInfo analyzeRequest = helpers.analyzeRequest(requestOrResponse);
-			bodyOffset = analyzeRequest.getBodyOffset();
+
+		if (helpers != null) {
+			if(isRequest) {
+				IRequestInfo analyzeRequest = helpers.analyzeRequest(requestOrResponse);
+				bodyOffset = analyzeRequest.getBodyOffset();
+			}else {
+				IResponseInfo analyzeResponse = helpers.analyzeResponse(requestOrResponse);
+				bodyOffset = analyzeResponse.getBodyOffset();
+			}
 		}else {
-			IResponseInfo analyzeResponse = helpers.analyzeResponse(requestOrResponse);
-			bodyOffset = analyzeResponse.getBodyOffset();
+			bodyOffset = Common.BytesIndexOf("\r\n\r\n".getBytes(), requestOrResponse);
+			bodyOffset = bodyOffset+4;
 		}
 		byte[] byte_body = Arrays.copyOfRange(requestOrResponse, bodyOffset, requestOrResponse.length);//not length-1
 		//String body = new String(byte_body); //byte[] to String

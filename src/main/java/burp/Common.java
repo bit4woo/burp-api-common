@@ -132,18 +132,18 @@ public class Common {
 		}
 		return result;
 	}
-	
+
 	public static String replaceLast(String string, String toReplace, String replacement) {
-	    int pos = string.lastIndexOf(toReplace);
-	    if (pos > -1) {
-	        return string.substring(0, pos)
-	             + replacement
-	             + string.substring(pos + toReplace.length());
-	    } else {
-	        return string;
-	    }
+		int pos = string.lastIndexOf(toReplace);
+		if (pos > -1) {
+			return string.substring(0, pos)
+					+ replacement
+					+ string.substring(pos + toReplace.length());
+		} else {
+			return string;
+		}
 	}
-	
+
 	/**
 	 * byte[]数组截取
 	 * srcPoC 是原数组的起始位置，length是要截取的长度
@@ -154,7 +154,7 @@ public class Common {
 		System.arraycopy(b, srcPos, b1, 0, length);
 		return b1;
 	}
-	
+
 
 	public static String cleanDomain(String domain) {
 		if (domain == null){
@@ -176,10 +176,10 @@ public class Common {
 		if (domain.endsWith(".")) {
 			domain = domain.substring(0,domain.length()-1);
 		}
-		
+
 		return domain;
 	}
-	
+
 	public static Set<String> grepDomain(String httpResponse) {
 		httpResponse = httpResponse.toLowerCase();
 		//httpResponse = cleanResponse(httpResponse);
@@ -498,17 +498,64 @@ public class Common {
 
 		return result;
 	}
-	
+
+
+	/**
+	 * https://stackoverflow.com/questions/21341027/find-indexof-a-byte-array-within-another-byte-array
+	 * Search the data byte array for the first occurrence 
+	 * of the byte array pattern.
+	 */
+	public static int BytesIndexOf(byte[] data, byte[] pattern) {
+		int[] failure = computeFailure(pattern);
+
+		int j = 0;
+
+		for (int i = 0; i < data.length; i++) {
+			while (j > 0 && pattern[j] != data[i]) {
+				j = failure[j - 1];
+			}
+			if (pattern[j] == data[i]) { 
+				j++; 
+			}
+			if (j == pattern.length) {
+				return i - pattern.length + 1;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * Computes the failure function using a boot-strapping process,
+	 * where the pattern is matched against itself.
+	 */
+	private static int[] computeFailure(byte[] pattern) {
+		int[] failure = new int[pattern.length];
+
+		int j = 0;
+		for (int i = 1; i < pattern.length; i++) {
+			while (j>0 && pattern[j] != pattern[i]) {
+				j = failure[j - 1];
+			}
+			if (pattern[j] == pattern[i]) {
+				j++;
+			}
+			failure[i] = j;
+		}
+
+		return failure;
+	}
+
+
 	public static List<Integer> allIndexesOf(String word,String guess) {
 		List<Integer> result = new ArrayList<Integer>();
 		int index = word.indexOf(guess);
 		while (index >= 0) {
 			result.add(index);
-		    index = word.indexOf(guess, index + 1);
+			index = word.indexOf(guess, index + 1);
 		}
 		return result;
 	}
-	
+
 	public static void test() {
 		// test IPv4
 		String ipv4Address = "127.56.87.4";
@@ -524,7 +571,7 @@ public class Common {
 			System.out.println("This is a private IPv6");
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.println(URL_Regex);
 	}
