@@ -2,12 +2,17 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<groupId>com.github.bit4woo</groupId>
 	<artifactId>burp-api-common</artifactId>
 	<version>0.1.4</version>
 	<packaging>jar</packaging>
-
+	<repositories>
+		<repository>
+			<id>mvnrepository</id>
+			<name>mvnrepository</name>
+			<url>http://www.mvnrepository.com</url>
+		</repository>
+	</repositories>
 	<dependencies>
 		<!-- Burp API -->
 		<!-- https://mvnrepository.com/artifact/net.portswigger.burp.extender/burp-extender-api -->
@@ -16,37 +21,33 @@
 			<artifactId>burp-extender-api</artifactId>
 			<version>2.1</version>
 		</dependency>
-
 		<!-- https://mvnrepository.com/artifact/commons-net/commons-net -->
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
-			<version>3.8.0</version>
+			<version>3.10.0</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.github.seancfoley</groupId>
 			<artifactId>ipaddress</artifactId>
 			<version>5.3.3</version>
 		</dependency>
-
 	</dependencies>
-
 	<build>
 		<plugins>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.2</version>
-				<configuration> <!-- Compile java 7 compatible bytecode -->
+				<configuration>
+					<!-- Compile java 7 compatible bytecode -->
 					<source>1.7</source>
 					<target>1.7</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
-
-			<plugin>  <!-- Create sources.jar -->
+			<plugin>
+				<!-- Create sources.jar -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 				<executions>
@@ -61,7 +62,6 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -79,8 +79,8 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<distributionManagement> <!-- 发布到GitHub的配置 -->
+	<distributionManagement>
+		<!-- 发布到GitHub的配置 -->
 		<repository>
 			<id>github</id>
 			<name>burp-api-common</name>
@@ -88,4 +88,3 @@
 		</repository>
 	</distributionManagement>
 </project>
-

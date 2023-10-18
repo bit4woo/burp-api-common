@@ -1,6 +1,8 @@
 package burp;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -476,6 +478,29 @@ public class HelperPlus{
 			return urlString;
 		}
 	}
+	
+    // 添加默认端口的方法
+    public static String getUrlWithDefaultPort(String url) {
+        try {
+            URI uri = new URI(url);
+
+            // 如果URL中没有明确指定端口，且协议为http，则添加默认端口80
+            if (uri.getPort() == -1 ) {
+            	if ("http".equalsIgnoreCase(uri.getScheme())) {
+            		return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), 80, uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+            	}
+            	if ("https".equalsIgnoreCase(uri.getScheme())) {
+            		return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), 443, uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+            	}
+            }
+            // 其他情况直接返回原始URL
+            return url;
+        } catch (URISyntaxException e) {
+            // 处理URI语法错误
+            e.printStackTrace();
+            return url;
+        }
+    }
 
 	/**
 	 * remove default port(80\443) from the url
