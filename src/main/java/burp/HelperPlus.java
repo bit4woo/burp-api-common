@@ -366,14 +366,27 @@ public class HelperPlus{
 	 */
 	public static URL getShortURL(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
-		String shortUrlString = messageInfo.getHttpService().toString();//http://www.baidu.com
-		shortUrlString = shortUrlString+"/";
+		IHttpService service = messageInfo.getHttpService();
+		//String shortUrlString = messageInfo.getHttpService().toString();//http://www.baidu.com
+		//新版本burp中，API发生了变化，返回结果是这种burp.Ze6r@7f06cf44/
+		
+		String shortUrlString = getShortURL(service);
 		try {
 			return new URL(shortUrlString);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	public static String getShortURL(IHttpService service){	
+		//String shortUrlString = messageInfo.getHttpService().toString();//http://www.baidu.com
+		//新版本burp中，API发生了变化，返回结果是这种burp.Ze6r@7f06cf44/
+		if (service ==null){
+			return null;
+		}
+		String shortUrlString = service.getProtocol()+"://"+service.getHost()+":"+service.getPort()+"/";
+		return shortUrlString;
 	}
 
 	/**
@@ -390,7 +403,10 @@ public class HelperPlus{
 	 */
 	public static URL getShortURLWithDefaultPort(IHttpRequestResponse messageInfo){
 		if (null == messageInfo) return null;
-		String shortUrlString = messageInfo.getHttpService().toString();//http://www.baidu.com
+		IHttpService service = messageInfo.getHttpService();
+		//String shortUrlString = messageInfo.getHttpService().toString();//http://www.baidu.com
+		//新版本burp中，API发生了变化，返回结果是这种burp.Ze6r@7f06cf44/
+		String shortUrlString = getShortURL(service);
 		shortUrlString = formateURLString(shortUrlString);
 		try {
 			return new URL(shortUrlString);
