@@ -386,6 +386,7 @@ public class HelperPlus{
 			return null;
 		}
 		String shortUrlString = service.getProtocol()+"://"+service.getHost()+":"+service.getPort()+"/";
+		shortUrlString = removeDefaultPort(shortUrlString);
 		return shortUrlString;
 	}
 
